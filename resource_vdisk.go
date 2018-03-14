@@ -5,9 +5,21 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"io/ioutil"
 	"log"
+	"encoding/json"
 	"net/http"
 	"net/url"
+	//"os"
 )
+
+type DiskResponse struct {
+	Result struct {
+		VDiskName	string `json:"vDiskName"`
+		Size		struct {
+			Units	string `json:"units"`
+			Value	int `json:"value"`
+		} `json:"size"`
+	} `json:"result"`
+}
 
 func resourceVdisk() *schema.Resource {
 	return &schema.Resource{
@@ -67,10 +79,43 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("body: %s", body)
 
-	return nil
+	return resourceVdiskRead(d, meta)
 }
 
-func resourceVdiskRead(d *schema.ResourceData, m interface{}) error {
+func resourceVdiskRead(d *schema.ResourceData, meta interface{}) error {
+	u := url.URL{}
+	u.Host = meta.(*HedvigClient).Node
+	u.Path = "/rest/"
+	u.Scheme = "http"
+
+	sessionID := GetSessionId(d, meta.(*HedvigClient))
+
+	q := url.Values{}
+	q.Set("request", fmt.Sprintf("{type:VirtualDiskDetails,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", d.Get("name").(string), sessionID))
+
+	u.RawQuery = q.Encode()
+	log.Printf("URL: %v", u.String())
+
+	resp, err := http.Get(u.String())
+	if err != nil {
+		log.Fatal(err)
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	disk := DiskResponse{}
+	err = json.Unmarshal(body, &disk)
+
+	if err != nil {
+		//os.Stderr.WriteString(string(body))
+		log.Fatalf("Error unmarshalling: %s :: %s", err, string(body))
+	}
+
+	d.Set("name", disk.Result.VDiskName)
+	d.Set("size", disk.Result.Size.Value)
+
 	return nil
 }
 
@@ -105,7 +150,7 @@ func resourceVdiskUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	}
 
-	return nil
+	return resourceVdiskRead(d, meta)
 }
 
 func resourceVdiskDelete(d *schema.ResourceData, meta interface{}) error {
