@@ -5,9 +5,23 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"io/ioutil"
 	"log"
+	"encoding/json"
 	"net/http"
 	"net/url"
 )
+
+type AccessResponse struct {
+	RequestID	string `json:"requestId"`
+	Result 		[]struct {
+				Host		string `json:"host"`
+				Initiator	[]struct {
+							Ip	string `json:"ip"`
+							Name	string `json:"name"`
+						}
+			} `json:"result"`
+	Status 		string `json:"status"`
+	Type 		string `json:"type"`
+}
 
 func resourceAccess() *schema.Resource {
 	return &schema.Resource{
@@ -71,15 +85,46 @@ func resourceAccessCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("body: %s", body)
 
-	return nil
+	return resourceAccessRead(d, meta)
 }
 
-func resourceAccessRead(d *schema.ResourceData, m interface{}) error {
+func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
+	u := url.URL{}
+	u.Host = meta.(*HedvigClient).Node
+	u.Path = "/rest/"
+	u.Scheme = "http"
+
+	sessionID := GetSessionId(d, meta.(*HedvigClient))
+
+	q := url.Values{}
+	q.Set("request", fmt.Sprintf("{type:GetACLInformation,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", d.Get("vdisk"), sessionID))
+
+	u.RawQuery = q.Encode()
+
+	resp, err := http.Get(u.String())
+	if err != nil {
+		log.Fatal(err)
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	access := AccessResponse{}
+	err = json.Unmarshal(body, &access)
+
+	if err != nil {
+		log.Fatalf("Error unmarshalling: %s", err)
+	}
+
+	d.Set("host", access.Result[0].Host)
+	d.Set("address", access.Result[0].Initiator[0].Ip)
+
 	return nil
 }
 
 func resourceAccessUpdate(d *schema.ResourceData, meta interface{}) error {
-	return nil
+	return resourceAccessRead(d, meta)
 }
 
 func resourceAccessDelete(d *schema.ResourceData, meta interface{}) error {
