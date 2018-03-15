@@ -4,10 +4,15 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"io/ioutil"
+	"encoding/json"
 	"log"
 	"net/http"
 	"net/url"
 )
+
+type MountResponse struct {
+	Result []string `json:"result"`
+}
 
 func resourceMount() *schema.Resource {
 	return &schema.Resource{
@@ -34,7 +39,7 @@ func resourceMount() *schema.Resource {
 }
 
 func resourceMountCreate(d *schema.ResourceData, meta interface{}) error {
-	d.SetId("lun-" + d.Get("vdisk").(string))
+	d.SetId("mount-" + d.Get("vdisk").(string))
 
 	u := url.URL{}
 	u.Host = meta.(*HedvigClient).Node
@@ -63,15 +68,45 @@ func resourceMountCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("body: %s", body)
 
-	return nil
+	return resourceMountRead(d, meta)
 }
 
-func resourceMountRead(d *schema.ResourceData, m interface{}) error {
+func resourceMountRead(d *schema.ResourceData, meta interface{}) error {
+	u := url.URL{}
+	u.Host = meta.(*HedvigClient).Node
+	u.Path = "/rest/"
+	u.Scheme = "http"
+
+	sessionID := GetSessionId(d, meta.(*HedvigClient))
+
+	q := url.Values{}
+	q.Set("request", fmt.Sprintf("{type:ListExportedTargets,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", d.Get("vdisk"), sessionID))
+
+	u.RawQuery = q.Encode()
+
+	resp, err := http.Get(u.String())
+	if err != nil {
+		log.Fatal(err)
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	mount := MountResponse{}
+	err = json.Unmarshal(body, &mount)
+
+	if err != nil {
+		log.Fatalf("Error unmarshalling: %s", err)
+	}
+
+	d.Set("controller", mount.Result[0])
+
 	return nil
 }
 
 func resourceMountUpdate(d *schema.ResourceData, meta interface{}) error {
-	return nil
+	return resourceMountRead(d, meta)
 }
 
 func resourceMountDelete(d *schema.ResourceData, meta interface{}) error {
