@@ -5,9 +5,16 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"io/ioutil"
 	"log"
+	"encoding/json"
 	"net/http"
 	"net/url"
 )
+
+type LunResponse struct {
+	Result struct {
+		TargetLocations []string `json:"targetLocations"`
+	} `json:"result"`
+}
 
 func resourceLun() *schema.Resource {
 	return &schema.Resource{
@@ -63,15 +70,46 @@ func resourceLunCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("body: %s", body)
 
-	return nil
+	//return nil
+	return resourceLunRead(d, meta)
 }
 
-func resourceLunRead(d *schema.ResourceData, m interface{}) error {
+func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
+	u := url.URL{}
+	u.Host = meta.(*HedvigClient).Node
+	u.Path = "/rest/"
+	u.Scheme = "http"
+
+	sessionID := GetSessionId(d, meta.(*HedvigClient))
+
+	q := url.Values{}
+	q.Set("request", fmt.Sprintf("{type:VirtualDiskDetails,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", d.Get("vdisk").(string), sessionID))
+
+	u.RawQuery = q.Encode()
+
+	resp, err := http.Get(u.String())
+	if err != nil {
+		log.Fatal(err)
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	lun := LunResponse{}
+	err = json.Unmarshal(body, &lun)
+
+	if err != nil {
+		log.Fatalf("Error unmarshalling: %s", err)
+	}
+
+	d.Set("controller", lun.Result.TargetLocations[0])
+
 	return nil
 }
 
 func resourceLunUpdate(d *schema.ResourceData, meta interface{}) error {
-	return nil
+	return resourceLunRead(d, meta)
 }
 
 func resourceLunDelete(d *schema.ResourceData, meta interface{}) error {
