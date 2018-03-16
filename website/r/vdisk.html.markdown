@@ -3,17 +3,34 @@ layout: "hedvig"
 page_title: "Hedvig: hedvig_vdisk"
 sidebar_current: "docs-hedvig-vdisk"
 description: |-
-  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+  Manages a Vdisk resource on a Hedvig cluster.
 ---
 
 # hedvig\_vdisk
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+Manages a Vdisk resource on a Hedvig cluster. For more information, visit [Hedvig's webpage](http://hedvig.io).
 
 ## Example Usage
 
+Example creating a Vdisk resource.
+
+```
+resource "hedvig_vdisk" "example-vdisk" {
+  cluster = "example"
+  name = "HedvigVdisk01"
+  size = 20
+  type = "NFS"
+}
+```
+
 ## Argument Reference
 
-## Attributes Reference
+The following arguments are supported:
 
-## Import
+* `cluster` - (Required) The name of the cluster hosting the Vdisk.
+
+* `name` - (Required) The name to be used by the Vdisk for identification.
+
+* `size` - (Required) The size of the disk in GB.
+
+* `type` - (Required) The type of the disk; can be either `BLOCK` or `NFS`
