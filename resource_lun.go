@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 type LunResponse struct {
@@ -103,12 +104,40 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 		log.Fatalf("Error unmarshalling: %s", err)
 	}
 
-	d.Set("controller", lun.Result.TargetLocations[0])
+	d.Set("controller", strings.Split(lun.Result.TargetLocations[0], ":")[0])
 
 	return nil
 }
 
 func resourceLunUpdate(d *schema.ResourceData, meta interface{}) error {
+	if d.HasChange("cluster") || d.HasChange("vdisk") || d.HasChange("controller") {
+		dOldVDisk, _ := d.GetChange("vdisk")
+		dOldController, _ := d.GetChange("controller")
+
+		u := url.URL{}
+		u.Host = meta.(*HedvigClient).Node
+		u.Path = "/rest/"
+		u.Scheme = "http"
+
+		q := url.Values{}
+
+		sessionID := GetSessionId(d, meta.(*HedvigClient))
+
+		q.Set("request", fmt.Sprintf("{type:UnmapLun, category:VirtualDiskManagement, params:{virtualDisk:'%s', target:'%s'}, sessionId: '%s'}", dOldVDisk.(string), dOldController.(string), sessionID))
+
+		u.RawQuery = q.Encode()
+		log.Printf("URL: %v", u.String())
+
+		_, err := http.Get(u.String())
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		//resourceLunDelete(d, meta)
+		resourceLunCreate(d, meta)
+	}
+
 	return resourceLunRead(d, meta)
 }
 

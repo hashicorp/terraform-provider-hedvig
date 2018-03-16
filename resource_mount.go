@@ -106,6 +106,34 @@ func resourceMountRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMountUpdate(d *schema.ResourceData, meta interface{}) error {
+	if d.HasChange("cluster") || d.HasChange("vdisk") || d.HasChange("controller") {
+		dOldVDisk, _ := d.GetChange("vdisk")
+		dOldController, _ := d.GetChange("controller")
+
+		u := url.URL{}
+		u.Host = meta.(*HedvigClient).Node
+		u.Path = "/rest/"
+		u.Scheme = "http"
+
+		q := url.Values{}
+
+		sessionID := GetSessionId(d, meta.(*HedvigClient))
+
+		q.Set("request", fmt.Sprintf("{type:Unmount, category:VirtualDiskManagemenet, params:{virtualDisk:'%s', targets:['%s']}, sessionId: '%s'}", dOldVDisk.(string), dOldController.(string), sessionID))
+
+		u.RawQuery = q.Encode()
+		log.Printf("URL: %v", u.String())
+
+		_, err := http.Get(u.String())
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		//resourceMountDelete(dOld, meta)
+		resourceMountCreate(d, meta)
+	}
+
 	return resourceMountRead(d, meta)
 }
 
