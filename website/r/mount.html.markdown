@@ -12,8 +12,20 @@ A Hedvig Mount mounts a vdisk resource with a particular controller. It can then
 
 ## Example Usage
 
+```
+resource "hedvig_mount" "example-mount" {
+  cluster = "example"
+  vdisk = "${hedvig_vdisk.example-vdisk.name}"
+  controller = "examplevip1.hedviginc.com"
+}
+```
+
 ## Argument Reference
 
-## Attributes Reference
+The following arguments are supported:
 
-## Import
+* `cluster` - (Required) The name of the cluster hosting the Mount.
+
+* `vdisk` - (Required) The name of the vdisk the Mount is on.
+
+* `controller` - (Required) The fully qualified domain name for the controller that the Mount is to attach to.
