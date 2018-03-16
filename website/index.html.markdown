@@ -29,3 +29,14 @@ resource "hedvig_vdisk" "example" {
 ```
 
 ## Configuration Reference
+
+The following keys can be used to configure the provider.
+
+* `username` - The username used to log into a node of the cluster for resource
+   creation.
+
+* `password` - The password that corresponds to the username used for logging
+   into the cluster.
+
+* `node` - The node that will be used to connect to in the cluster that resources
+   will be created on.
