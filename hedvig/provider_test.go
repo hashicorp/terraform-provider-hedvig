@@ -1,4 +1,4 @@
-package main
+package hedvig
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"

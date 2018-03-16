@@ -11,7 +11,7 @@ limitations under the License.
 
 Modified by Katrina for Hedvig
 */
-package main
+package hedvig
 
 import (
 	"encoding/json"
