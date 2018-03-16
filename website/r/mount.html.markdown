@@ -1,14 +1,14 @@
 ---
 layout: "hedvig"
-page_title: "Hedvig: hedvig_access"
-sidebar_current: "docs-hedvig-access"
+page_title: "Hedvig: hedvig_mount"
+sidebar_current: "docs-hedvig-mount"
 description: |-
-  Adds an ACL address to a controller resource of a vdisk resource.
+  Mounts vdisk resource with a particular controller.
 ---
 
-# hedvig\_access
+# hedvig\_mount
 
-A Hedvig Access adds an address to an ACL of a controller of a vdisk. This allows for management of resource access.
+A Hedvig Mount mounts a vdisk resource with a particular controller. It can then be used to connect ACL access resources to the vdisk as well.
 
 ## Example Usage
 

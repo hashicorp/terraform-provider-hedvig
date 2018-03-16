@@ -8,7 +8,7 @@ description: |-
 
 # hedvig\_access
 
-A Hedvig Access adds an address to an ACL of a controller of a vdisk. This allows for management of resource access.
+A Hedvig Access adds an address to an ACL of a controller of a vdisk. This allows for management of access resources.
 
 ## Example Usage
 

@@ -1,14 +1,14 @@
 ---
 layout: "hedvig"
-page_title: "Hedvig: hedvig_access"
-sidebar_current: "docs-hedvig-access"
+page_title: "Hedvig: hedvig_lun"
+sidebar_current: "docs-hedvig-lun"
 description: |-
-  Adds an ACL address to a controller resource of a vdisk resource.
+  Adds a virtual disk as a LUN to a controller.
 ---
 
 # hedvig\_access
 
-A Hedvig Access adds an address to an ACL of a controller of a vdisk. This allows for management of resource access.
+A Hedvig Lun adds a vdisk resource to a particular controller, enabling the addition of ACL access resources to the vdisk.
 
 ## Example Usage
 

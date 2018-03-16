@@ -1,14 +1,14 @@
 ---
 layout: "hedvig"
-page_title: "Hedvig: hedvig_access"
-sidebar_current: "docs-hedvig-access"
+page_title: "Hedvig: hedvig_vdisk"
+sidebar_current: "docs-hedvig-vdisk"
 description: |-
-  Adds an ACL address to a controller resource of a vdisk resource.
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 ---
 
-# hedvig\_access
+# hedvig\_vdisk
 
-A Hedvig Access adds an address to an ACL of a controller of a vdisk. This allows for management of resource access.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 
 ## Example Usage
 
