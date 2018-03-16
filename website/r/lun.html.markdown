@@ -6,14 +6,28 @@ description: |-
   Adds a virtual disk as a LUN to a controller.
 ---
 
-# hedvig\_access
+# hedvig\_lun
 
 A Hedvig Lun adds a vdisk resource to a particular controller, enabling the addition of ACL access resources to the vdisk.
 
 ## Example Usage
 
+Example creating a Lun resource.
+
+```
+resource "hedvig_lun" "example-lun" {
+  cluster = "example"
+  vdisk = "${hedvig_vdisk.example-vdisk.name}"
+  controller = "examplevip1.hedviginc.com"
+}
+```
+
 ## Argument Reference
 
-## Attributes Reference
+The following arguments are supported:
 
-## Import
+ * `cluster` - (Required) The name of the cluster hosting the LUN.
+
+ * `vdisk` - (Required) The name of the vdisk the LUN is on.
+
+ * `controller` - (Required) The fully qualified domain name for the controller that the LUN is to attach to.
