@@ -1,26 +1,26 @@
 package hedvig
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"io/ioutil"
 	"log"
-	"encoding/json"
 	"net/http"
 	"net/url"
 )
 
 type AccessResponse struct {
-	RequestID	string `json:"requestId"`
-	Result 		[]struct {
-				Host		string `json:"host"`
-				Initiator	[]struct {
-							Ip	string `json:"ip"`
-							Name	string `json:"name"`
-						}
-			} `json:"result"`
-	Status 		string `json:"status"`
-	Type 		string `json:"type"`
+	RequestID string `json:"requestId"`
+	Result    []struct {
+		Host      string `json:"host"`
+		Initiator []struct {
+			Ip   string `json:"ip"`
+			Name string `json:"name"`
+		}
+	} `json:"result"`
+	Status string `json:"status"`
+	Type   string `json:"type"`
 }
 
 func resourceAccess() *schema.Resource {

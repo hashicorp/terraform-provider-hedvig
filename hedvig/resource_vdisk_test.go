@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"testing"
 	"os"
+	"testing"
 )
 
 func testHedvigVdisk() error {

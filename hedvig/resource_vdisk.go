@@ -1,11 +1,11 @@
 package hedvig
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"io/ioutil"
 	"log"
-	"encoding/json"
 	"net/http"
 	"net/url"
 	//"os"
@@ -13,10 +13,10 @@ import (
 
 type DiskResponse struct {
 	Result struct {
-		VDiskName	string `json:"vDiskName"`
-		Size		struct {
-			Units	string `json:"units"`
-			Value	int `json:"value"`
+		VDiskName string `json:"vDiskName"`
+		Size      struct {
+			Units string `json:"units"`
+			Value int    `json:"value"`
 		} `json:"size"`
 	} `json:"result"`
 }

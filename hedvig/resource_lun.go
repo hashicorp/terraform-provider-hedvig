@@ -1,11 +1,11 @@
 package hedvig
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"io/ioutil"
 	"log"
-	"encoding/json"
 	"net/http"
 	"net/url"
 	"strings"

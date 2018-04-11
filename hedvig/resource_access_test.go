@@ -74,7 +74,7 @@ resource "hedvig_access" "test-access2" {
   address = "%s"
   type = "host"
 }
-`, os.Getenv("HV_TESTNODE"), os.Getenv("HV_TESTUSER"), os.Getenv("HV_TESTPASS"), os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTCONT"), os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTCONT"), os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTADDR"), os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTADDR222222222222"))
+`, os.Getenv("HV_TESTNODE"), os.Getenv("HV_TESTUSER"), os.Getenv("HV_TESTPASS"), os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTCONT"), os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTCONT"), os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTADDR"), os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTADDR2"))
 
 func testAccCheckHedvigAccessExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
