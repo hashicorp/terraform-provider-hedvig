@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
+	"math/rand"
 	"os"
 	"testing"
+	"time"
 )
 
 func testHedvigAccess() error {
@@ -35,14 +37,14 @@ provider "hedvig" {
 
 resource "hedvig_vdisk" "test-access-vdisk1" {
   cluster = "%s"
-  name = "HedvigVdiskTest5"
+  name = "%s"
   size = 9
   type = "BLOCK"
 }
 
 resource "hedvig_vdisk" "test-access-vdisk2" {
   cluster = "%s"
-  name = "HedvigVdiskTest6"
+  name = "%s"
   size = 14
   type = "NFS"
 }
@@ -74,7 +76,22 @@ resource "hedvig_access" "test-access2" {
   address = "%s"
   type = "host"
 }
-`, os.Getenv("HV_TESTNODE"), os.Getenv("HV_TESTUSER"), os.Getenv("HV_TESTPASS"), os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTCONT"), os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTCONT"), os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTADDR"), os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTADDR2"))
+`, os.Getenv("HV_TESTNODE"), os.Getenv("HV_TESTUSER"), os.Getenv("HV_TESTPASS"),
+	os.Getenv("HV_TESTCLUST"), genRandomVdiskName(),
+	os.Getenv("HV_TESTCLUST"), genRandomVdiskName(),
+	os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTCONT"),
+	os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTCONT"),
+	os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTADDR"),
+	os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTADDR2"))
+
+func genRandomVdiskName() string {
+	rand.Seed(time.Now().UnixNano())
+	bytes := make([]byte, 10)
+	for i := 0; i < 10; i++ {
+		bytes[i] = byte(65 + rand.Intn(25))
+	}
+	return fmt.Sprintf("HV-Test-%s", string(bytes))
+}
 
 func testAccCheckHedvigAccessExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {

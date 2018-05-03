@@ -35,7 +35,7 @@ provider "hedvig" {
 
 resource "hedvig_vdisk" "test-lun-vdisk" {
   cluster = "%s"
-  name = "HedvigVdiskTest3"
+  name = "%s"
   size = 9
   type = "BLOCK"
 }
@@ -45,7 +45,9 @@ resource "hedvig_lun" "test-lun" {
   vdisk = "${hedvig_vdisk.test-lun-vdisk.name}"
   controller = "%s"
 }
-`, os.Getenv("HV_TESTNODE"), os.Getenv("HV_TESTUSER"), os.Getenv("HV_TESTPASS"), os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTCONT"))
+`, os.Getenv("HV_TESTNODE"), os.Getenv("HV_TESTUSER"), os.Getenv("HV_TESTPASS"),
+	os.Getenv("HV_TESTCLUST"), genRandomVdiskName(),
+	os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTCONT"))
 
 func testAccCheckHedvigLunExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
