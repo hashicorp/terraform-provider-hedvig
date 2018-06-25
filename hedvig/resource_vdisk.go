@@ -3,11 +3,12 @@ package hedvig
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
+
+	"github.com/hashicorp/terraform/helper/schema"
 	//"os"
 )
 
@@ -163,7 +164,7 @@ func resourceVdiskDelete(d *schema.ResourceData, meta interface{}) error {
 
 	sessionID := GetSessionId(d, meta.(*HedvigClient))
 
-	q.Set("request", fmt.Sprintf("{type:DeleteVDisk, category:VirtualDiskManagement, params:{virtualDisks:['%s']}, sessionId:'%s'}, sessionId:'%s'}", d.Get("name").(string),
+	q.Set("request", fmt.Sprintf("{type:DeleteVDisk, category:VirtualDiskManagement, params:{virtualDisks:['%s']}, sessionId:'%s'}, sessionId:'%s'}", d.Get("name").(string), sessionID,
 		sessionID))
 	u.RawQuery = q.Encode()
 	log.Printf("URL: %v", u.String())
