@@ -42,8 +42,6 @@ func resourceLun() *schema.Resource {
 }
 
 func resourceLunCreate(d *schema.ResourceData, meta interface{}) error {
-	d.SetId("lun-" + d.Get("vdisk").(string))
-
 	u := url.URL{}
 	u.Host = meta.(*HedvigClient).Node
 	u.Path = "/rest/"
@@ -53,7 +51,7 @@ func resourceLunCreate(d *schema.ResourceData, meta interface{}) error {
 
 	sessionID := GetSessionId(d, meta.(*HedvigClient))
 
-	q.Set("request", fmt.Sprintf("{type:AddLun, category:VirtualDiskManagement, params:{virtualDisks:['%s'], targets:['%s'], readonly:false}, sessionId:'%s'}", d.Get("vdisk"), d.Get("controller"),
+	q.Set("request", fmt.Sprintf("{type:AddLun, category:VirtualDiskManagement, params:{virtualDisks:['%s'], targets:['%s'], readonly:false}, sessionId:'%s'}", d.Get("vdisk").(string), d.Get("controller").(string),
 		sessionID))
 	u.RawQuery = q.Encode()
 	log.Printf("URL: %v", u.String())
@@ -70,6 +68,8 @@ func resourceLunCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	log.Printf("body: %s", body)
+
+        d.SetId("lun-" + d.Get("vdisk").(string))
 
 	//return nil
 	return resourceLunRead(d, meta)
@@ -92,6 +92,10 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		log.Fatal(err)
 	}
+        if resp.StatusCode == 404 {
+                d.SetId("")
+                log.Fatal(res.StatusCode)
+        }
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)

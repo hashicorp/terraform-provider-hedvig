@@ -56,8 +56,6 @@ func resourceAccess() *schema.Resource {
 }
 
 func resourceAccessCreate(d *schema.ResourceData, meta interface{}) error {
-	d.SetId("access-" + d.Get("vdisk").(string) + "-" + d.Get("address").(string))
-
 	u := url.URL{}
 	u.Host = meta.(*HedvigClient).Node
 	u.Path = "/rest/"
@@ -67,8 +65,8 @@ func resourceAccessCreate(d *schema.ResourceData, meta interface{}) error {
 
 	sessionID := GetSessionId(d, meta.(*HedvigClient))
 
-	q.Set("request", fmt.Sprintf("{type:PersistACLAccess, category:VirtualDiskManagement, params:{virtualDisks:['%s'], host:'%s', address:'%s', type:'%s'}, sessionId:'%s'}", d.Get("vdisk"), d.Get("host"), d.Get("address"),
-		d.Get("type"), sessionID))
+	q.Set("request", fmt.Sprintf("{type:PersistACLAccess, category:VirtualDiskManagement, params:{virtualDisks:['%s'], host:'%s', address:'%s', type:'%s'}, sessionId:'%s'}", d.Get("vdisk").(string), d.Get("host").(string), d.Get("address").(string),
+		d.Get("type").(string), sessionID))
 	u.RawQuery = q.Encode()
 	log.Printf("URL: %v", u.String())
 
@@ -85,6 +83,8 @@ func resourceAccessCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("body: %s", body)
 
+        d.SetId("access-" + d.Get("vdisk").(string) + "-" + d.Get("address").(string))
+
 	return resourceAccessRead(d, meta)
 }
 
@@ -97,7 +97,7 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
 	sessionID := GetSessionId(d, meta.(*HedvigClient))
 
 	q := url.Values{}
-	q.Set("request", fmt.Sprintf("{type:GetACLInformation,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", d.Get("vdisk"), sessionID))
+	q.Set("request", fmt.Sprintf("{type:GetACLInformation,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", d.Get("vdisk").(string), sessionID))
 
 	u.RawQuery = q.Encode()
 
@@ -105,6 +105,10 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		log.Fatal(err)
 	}
+        if resp.StatusCode == 404 {
+                d.SetId("")
+                log.Fatal(err)
+        }
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
@@ -116,6 +120,10 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		log.Fatalf("Error unmarshalling: %s", err)
 	}
+
+        if len(access.Result) < 1 {
+                log.Fatal("Incorrect Array Size")
+        }
 
 	d.Set("host", access.Result[0].Host)
 	//d.Set("address", access.Result[0].Initiator[0].Ip)
@@ -175,7 +183,7 @@ func resourceAccessDelete(d *schema.ResourceData, meta interface{}) error {
 
 	sessionID := GetSessionId(d, meta.(*HedvigClient))
 
-	q.Set("request", fmt.Sprintf("{type:RemoveACLAccess, category:VirtualDiskManagement, params:{virtualDisk:'%s', host:'%s', address:['%s']}, sessionId: '%s'}", d.Get("vdisk"), d.Get("host"), d.Get("address"),
+	q.Set("request", fmt.Sprintf("{type:RemoveACLAccess, category:VirtualDiskManagement, params:{virtualDisk:'%s', host:'%s', address:['%s']}, sessionId: '%s'}", d.Get("vdisk").(string), d.Get("host").(string, d.Get("address").(string),
 		sessionID))
 	u.RawQuery = q.Encode()
 	log.Printf("URL: %v", u.String())

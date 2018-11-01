@@ -39,8 +39,6 @@ func resourceMount() *schema.Resource {
 }
 
 func resourceMountCreate(d *schema.ResourceData, meta interface{}) error {
-	d.SetId("mount-" + d.Get("vdisk").(string))
-
 	u := url.URL{}
 	u.Host = meta.(*HedvigClient).Node
 	u.Path = "/rest/"
@@ -68,6 +66,8 @@ func resourceMountCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("body: %s", body)
 
+        d.SetId("mount-" + d.Get("vdisk").(string))
+
 	return resourceMountRead(d, meta)
 }
 
@@ -88,6 +88,10 @@ func resourceMountRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		log.Fatal(err)
 	}
+        if res.StatusCode == 404 {
+                d.SetId("")
+                log.Fatal(res.StatusCode)
+        }
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)

@@ -51,8 +51,6 @@ func resourceVdisk() *schema.Resource {
 }
 
 func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
-	d.SetId("id-" + d.Get("name").(string))
-
 	u := url.URL{}
 	u.Host = meta.(*HedvigClient).Node
 	u.Path = "/rest/"
@@ -73,12 +71,19 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 		log.Fatal(err)
 	}
 
+        if res.StatusCode == 404 {
+                d.SetId("")
+                log.Fatal(res.StatusCode)
+        }
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	log.Printf("body: %s", body)
+
+        d.SetId("id-" + d.Get("name").(string))
 
 	return resourceVdiskRead(d, meta)
 }
