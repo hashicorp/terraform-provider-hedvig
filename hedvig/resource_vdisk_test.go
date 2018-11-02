@@ -9,10 +9,6 @@ import (
 	"testing"
 )
 
-func testHedvigVdisk() error {
-	return nil
-}
-
 func TestAccHedvigVdisk(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

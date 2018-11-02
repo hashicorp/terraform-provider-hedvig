@@ -71,7 +71,6 @@ func resourceLunCreate(d *schema.ResourceData, meta interface{}) error {
 
         d.SetId("lun-" + d.Get("vdisk").(string))
 
-	//return nil
 	return resourceLunRead(d, meta)
 }
 
@@ -94,7 +93,7 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 	}
         if resp.StatusCode == 404 {
                 d.SetId("")
-                log.Fatal(res.StatusCode)
+                log.Fatal(resp.StatusCode)
         }
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -107,6 +106,10 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		log.Fatalf("Error unmarshalling: %s", err)
 	}
+
+        //len(lun.Result.TargetLocations) < 1 {
+        //        log.Fatal("Array too short")
+        //}
 
 	d.Set("controller", strings.Split(lun.Result.TargetLocations[0], ":")[0])
 
@@ -138,7 +141,6 @@ func resourceLunUpdate(d *schema.ResourceData, meta interface{}) error {
 			log.Fatal(err)
 		}
 
-		//resourceLunDelete(d, meta)
 		resourceLunCreate(d, meta)
 	}
 

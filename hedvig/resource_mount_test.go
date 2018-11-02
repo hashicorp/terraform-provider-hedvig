@@ -9,10 +9,6 @@ import (
 	"testing"
 )
 
-func testHedvigMount() error {
-	return nil
-}
-
 func TestAccHedvigMount(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

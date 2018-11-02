@@ -48,7 +48,7 @@ type HedvigClient struct {
 }
 
 func Provider() terraform.ResourceProvider {
-	return &schema.Provider{ // Source https://github.com/hashicorp/terraform/blob/v0.6.6/helper/schema/provider.go#L20-L43
+	return &schema.Provider{
 		Schema:        providerSchema(),
 		ResourcesMap:  providerResources(),
 		ConfigureFunc: providerConfigure,

@@ -126,7 +126,6 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
         }
 
 	d.Set("host", access.Result[0].Host)
-	//d.Set("address", access.Result[0].Initiator[0].Ip)
 
 	return nil
 }
@@ -183,7 +182,7 @@ func resourceAccessDelete(d *schema.ResourceData, meta interface{}) error {
 
 	sessionID := GetSessionId(d, meta.(*HedvigClient))
 
-	q.Set("request", fmt.Sprintf("{type:RemoveACLAccess, category:VirtualDiskManagement, params:{virtualDisk:'%s', host:'%s', address:['%s']}, sessionId: '%s'}", d.Get("vdisk").(string), d.Get("host").(string, d.Get("address").(string),
+	q.Set("request", fmt.Sprintf("{type:RemoveACLAccess, category:VirtualDiskManagement, params:{virtualDisk:'%s', host:'%s', address:['%s']}, sessionId: '%s'}", d.Get("vdisk").(string), d.Get("host").(string), d.Get("address").(string),
 		sessionID))
 	u.RawQuery = q.Encode()
 	log.Printf("URL: %v", u.String())

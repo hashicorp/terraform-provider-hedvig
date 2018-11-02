@@ -9,7 +9,6 @@ import (
 	"net/url"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	//"os"
 )
 
 type DiskResponse struct {
@@ -71,9 +70,9 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 		log.Fatal(err)
 	}
 
-        if res.StatusCode == 404 {
+        if resp.StatusCode == 404 {
                 d.SetId("")
-                log.Fatal(res.StatusCode)
+                log.Fatal(resp.StatusCode)
         }
 
 	body, err := ioutil.ReadAll(resp.Body)
@@ -115,7 +114,6 @@ func resourceVdiskRead(d *schema.ResourceData, meta interface{}) error {
 	err = json.Unmarshal(body, &disk)
 
 	if err != nil {
-		//os.Stderr.WriteString(string(body))
 		log.Fatalf("Error unmarshalling: %s :: %s", err, string(body))
 	}
 

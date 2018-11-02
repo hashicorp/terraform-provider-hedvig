@@ -88,9 +88,9 @@ func resourceMountRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-        if res.StatusCode == 404 {
+        if resp.StatusCode == 404 {
                 d.SetId("")
-                log.Fatal(res.StatusCode)
+                log.Fatal(resp.StatusCode)
         }
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -103,6 +103,10 @@ func resourceMountRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		log.Fatalf("Error unmarshalling: %s", err)
 	}
+
+        if len(mount.Result) < 1 {
+                log.Fatal("Array too small")
+        }
 
 	d.Set("controller", mount.Result[0])
 
@@ -134,7 +138,6 @@ func resourceMountUpdate(d *schema.ResourceData, meta interface{}) error {
 			log.Fatal(err)
 		}
 
-		//resourceMountDelete(dOld, meta)
 		resourceMountCreate(d, meta)
 	}
 
