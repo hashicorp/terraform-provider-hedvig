@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+        "errors"
 )
 
 type AccessResponse struct {
@@ -73,12 +74,12 @@ func resourceAccessCreate(d *schema.ResourceData, meta interface{}) error {
 	resp, err := http.Get(u.String())
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	log.Printf("body: %s", body)
@@ -103,11 +104,11 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
 
 	resp, err := http.Get(u.String())
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
         if resp.StatusCode == 404 {
                 d.SetId("")
-                log.Fatal(err)
+                return err
         }
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -118,11 +119,11 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
 	err = json.Unmarshal(body, &access)
 
 	if err != nil {
-		log.Fatalf("Error unmarshalling: %s", err)
+		return err
 	}
 
         if len(access.Result) < 1 {
-                log.Fatal("Incorrect Array Size")
+                return errors.New("Incorrect Array Size")
         }
 
 	d.Set("host", access.Result[0].Host)
@@ -156,12 +157,12 @@ func resourceAccessUpdate(d *schema.ResourceData, meta interface{}) error {
 		resp, err := http.Get(u.String())
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		body, _ := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		log.Printf("body: %s", body)
@@ -190,12 +191,12 @@ func resourceAccessDelete(d *schema.ResourceData, meta interface{}) error {
 	resp, err := http.Get(u.String())
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	log.Printf("body: %s", body)

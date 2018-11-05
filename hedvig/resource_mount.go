@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+        "errors"
+        "strconv"
 )
 
 type MountResponse struct {
@@ -25,14 +27,17 @@ func resourceMount() *schema.Resource {
 			"vdisk": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+                                ForceNew: true,
 			},
 			"controller": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+                                ForceNew: true,
 			},
 			"cluster": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+                                ForceNew: true,
 			},
 		},
 	}
@@ -56,12 +61,12 @@ func resourceMountCreate(d *schema.ResourceData, meta interface{}) error {
 	resp, err := http.Get(u.String())
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	log.Printf("body: %s", body)
@@ -90,22 +95,23 @@ func resourceMountRead(d *schema.ResourceData, meta interface{}) error {
 	}
         if resp.StatusCode == 404 {
                 d.SetId("")
-                log.Fatal(resp.StatusCode)
+                s := strconv.Itoa(resp.StatusCode)
+                return errors.New(s)
         }
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	mount := MountResponse{}
 	err = json.Unmarshal(body, &mount)
 
 	if err != nil {
-		log.Fatalf("Error unmarshalling: %s", err)
+		return err
 	}
 
         if len(mount.Result) < 1 {
-                log.Fatal("Array too small")
+                return errors.New("Array too small")
         }
 
 	d.Set("controller", mount.Result[0])
@@ -135,7 +141,7 @@ func resourceMountUpdate(d *schema.ResourceData, meta interface{}) error {
 		_, err := http.Get(u.String())
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		resourceMountCreate(d, meta)
@@ -162,12 +168,12 @@ func resourceMountDelete(d *schema.ResourceData, meta interface{}) error {
 	resp, err := http.Get(u.String())
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	log.Printf("body: %s", body)

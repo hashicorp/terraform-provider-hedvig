@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+        "errors"
 )
 
 type LunResponse struct {
@@ -59,12 +60,12 @@ func resourceLunCreate(d *schema.ResourceData, meta interface{}) error {
 	resp, err := http.Get(u.String())
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	log.Printf("body: %s", body)
@@ -89,7 +90,7 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 
 	resp, err := http.Get(u.String())
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
         if resp.StatusCode == 404 {
                 d.SetId("")
@@ -97,20 +98,21 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
         }
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	lun := LunResponse{}
 	err = json.Unmarshal(body, &lun)
 
 	if err != nil {
-		log.Fatalf("Error unmarshalling: %s", err)
+		return err
 	}
 
-        //len(lun.Result.TargetLocations) < 1 {
-        //        log.Fatal("Array too short")
-        //}
+        if len(lun.Result.TargetLocations) < 1 {
+                return errors.New("Array too short")
+        }
 
+        //d.Set("vdisk", strings.split(lun.Result.TargetLocations[0], ":")[0])
 	d.Set("controller", strings.Split(lun.Result.TargetLocations[0], ":")[0])
 
 	return nil
@@ -138,7 +140,7 @@ func resourceLunUpdate(d *schema.ResourceData, meta interface{}) error {
 		_, err := http.Get(u.String())
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		resourceLunCreate(d, meta)
@@ -165,12 +167,12 @@ func resourceLunDelete(d *schema.ResourceData, meta interface{}) error {
 	resp, err := http.Get(u.String())
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	log.Printf("body: %s", body)

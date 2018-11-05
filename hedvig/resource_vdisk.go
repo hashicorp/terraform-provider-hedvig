@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+        "errors"
+        "strconv"
 
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -32,6 +34,7 @@ func resourceVdisk() *schema.Resource {
 			"name": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"size": &schema.Schema{
 				Type:     schema.TypeInt,
@@ -40,10 +43,12 @@ func resourceVdisk() *schema.Resource {
 			"cluster": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"type": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 		},
 	}
@@ -67,17 +72,18 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 	resp, err := http.Get(u.String())
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
         if resp.StatusCode == 404 {
                 d.SetId("")
-                log.Fatal(resp.StatusCode)
+                strresp := strconv.Itoa(resp.StatusCode)
+                return errors.New(strresp)
         }
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	log.Printf("body: %s", body)
@@ -103,18 +109,19 @@ func resourceVdiskRead(d *schema.ResourceData, meta interface{}) error {
 
 	resp, err := http.Get(u.String())
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	disk := DiskResponse{}
 	err = json.Unmarshal(body, &disk)
 
 	if err != nil {
-		log.Fatalf("Error unmarshalling: %s :: %s", err, string(body))
+                erstr := fmt.Sprintf("Error unmarshalling: %s :: %s", err, string(body))
+		return errors.New(erstr)
 	}
 
 	d.Set("name", disk.Result.VDiskName)
@@ -142,12 +149,12 @@ func resourceVdiskUpdate(d *schema.ResourceData, meta interface{}) error {
 		resp, err := http.Get(u.String())
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		log.Printf("body: %s", body)
@@ -175,12 +182,12 @@ func resourceVdiskDelete(d *schema.ResourceData, meta interface{}) error {
 	resp, err := http.Get(u.String())
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	log.Printf("body: %s", body)
