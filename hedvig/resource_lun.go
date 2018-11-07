@@ -2,6 +2,7 @@ package hedvig
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"io/ioutil"
@@ -9,7 +10,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-        "errors"
 )
 
 type LunResponse struct {
@@ -29,17 +29,17 @@ func resourceLun() *schema.Resource {
 			"vdisk": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
-                                ForceNew: true,
+				ForceNew: true,
 			},
 			"controller": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
-                                ForceNew: true,
+				ForceNew: true,
 			},
 			"cluster": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
-                                ForceNew: true,
+				ForceNew: true,
 			},
 		},
 	}
@@ -73,7 +73,7 @@ func resourceLunCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("body: %s", body)
 
-        d.SetId("lun-" + d.Get("vdisk").(string))
+	d.SetId("lun-" + d.Get("vdisk").(string))
 
 	return resourceLunRead(d, meta)
 }
@@ -95,10 +95,10 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-        if resp.StatusCode == 404 {
-                d.SetId("")
-                log.Fatal(resp.StatusCode)
-        }
+	if resp.StatusCode == 404 {
+		d.SetId("")
+		log.Fatal(resp.StatusCode)
+	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
@@ -111,11 +111,11 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-        if len(lun.Result.TargetLocations) < 1 {
-                return errors.New("Array too short")
-        }
+	if len(lun.Result.TargetLocations) < 1 {
+		return errors.New("Array too short")
+	}
 
-        //d.Set("vdisk", strings.split(lun.Result.TargetLocations[0], ":")[0])
+	//d.Set("vdisk", strings.split(lun.Result.TargetLocations[0], ":")[0])
 	d.Set("controller", strings.Split(lun.Result.TargetLocations[0], ":")[0])
 
 	return nil

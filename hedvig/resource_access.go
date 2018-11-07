@@ -2,13 +2,13 @@ package hedvig
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
-        "errors"
 )
 
 type AccessResponse struct {
@@ -89,7 +89,7 @@ func resourceAccessCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("body: %s", body)
 
-        d.SetId("access-" + d.Get("vdisk").(string) + "-" + d.Get("address").(string))
+	d.SetId("access-" + d.Get("vdisk").(string) + "-" + d.Get("address").(string))
 
 	return resourceAccessRead(d, meta)
 }
@@ -111,10 +111,10 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-        if resp.StatusCode == 404 {
-                d.SetId("")
-                return err
-        }
+	if resp.StatusCode == 404 {
+		d.SetId("")
+		return err
+	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
@@ -127,9 +127,9 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-        if len(access.Result) < 1 {
-                return errors.New("Incorrect Array Size")
-        }
+	if len(access.Result) < 1 {
+		return errors.New("Incorrect Array Size")
+	}
 
 	d.Set("host", access.Result[0].Host)
 

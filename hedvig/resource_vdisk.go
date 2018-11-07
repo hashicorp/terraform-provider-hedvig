@@ -2,16 +2,16 @@ package hedvig
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
-        "errors"
-        "strconv"
+	"strconv"
 
 	"github.com/hashicorp/terraform/helper/schema"
-        "github.com/hashicorp/terraform/helper/validation"
+	"github.com/hashicorp/terraform/helper/validation"
 )
 
 type DiskResponse struct {
@@ -50,11 +50,10 @@ func resourceVdisk() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
-                                ValidateFunc: validation.StringInSlice([]string{
-                                        "host",
-                                        "ip",
-                                        "iqn",
-                                }, true),
+				ValidateFunc: validation.StringInSlice([]string{
+					"NFS",
+					"BLOCK",
+				}, true),
 			},
 		},
 	}
@@ -81,11 +80,11 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-        if resp.StatusCode == 404 {
-                d.SetId("")
-                strresp := strconv.Itoa(resp.StatusCode)
-                return errors.New(strresp)
-        }
+	if resp.StatusCode == 404 {
+		d.SetId("")
+		strresp := strconv.Itoa(resp.StatusCode)
+		return errors.New(strresp)
+	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -94,7 +93,7 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("body: %s", body)
 
-        d.SetId("id-" + d.Get("name").(string))
+	d.SetId("id-" + d.Get("name").(string))
 
 	return resourceVdiskRead(d, meta)
 }
@@ -126,10 +125,12 @@ func resourceVdiskRead(d *schema.ResourceData, meta interface{}) error {
 	err = json.Unmarshal(body, &disk)
 
 	if err != nil {
-                erstr := fmt.Sprintf("Error unmarshalling: %s :: %s", err, string(body))
+		erstr := fmt.Sprintf("Error unmarshalling: %s :: %s", err, string(body))
 		return errors.New(erstr)
 	}
 
+	//d.Set("cluster", disk.Result.Cluster)
+	//d.Set("type", disk.Result.Type)
 	d.Set("name", disk.Result.VDiskName)
 	d.Set("size", disk.Result.Size.Value)
 

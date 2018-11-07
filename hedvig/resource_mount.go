@@ -2,14 +2,14 @@ package hedvig
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
-        "errors"
-        "strconv"
+	"strconv"
 )
 
 type MountResponse struct {
@@ -27,17 +27,17 @@ func resourceMount() *schema.Resource {
 			"vdisk": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
-                                ForceNew: true,
+				ForceNew: true,
 			},
 			"controller": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
-                                ForceNew: true,
+				ForceNew: true,
 			},
 			"cluster": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
-                                ForceNew: true,
+				ForceNew: true,
 			},
 		},
 	}
@@ -71,7 +71,7 @@ func resourceMountCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("body: %s", body)
 
-        d.SetId("mount-" + d.Get("vdisk").(string))
+	d.SetId("mount-" + d.Get("vdisk").(string))
 
 	return resourceMountRead(d, meta)
 }
@@ -93,11 +93,11 @@ func resourceMountRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-        if resp.StatusCode == 404 {
-                d.SetId("")
-                s := strconv.Itoa(resp.StatusCode)
-                return errors.New(s)
-        }
+	if resp.StatusCode == 404 {
+		d.SetId("")
+		s := strconv.Itoa(resp.StatusCode)
+		return errors.New(s)
+	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
@@ -110,11 +110,11 @@ func resourceMountRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-        if len(mount.Result) < 1 {
-                return errors.New("Array too small")
-        }
+	//if len(mount.Result) < 1 {
+	//	return errors.New("Array too small")
+	//}
 
-	d.Set("controller", mount.Result[0])
+	//d.Set("controller", mount.Result[0])
 
 	return nil
 }
