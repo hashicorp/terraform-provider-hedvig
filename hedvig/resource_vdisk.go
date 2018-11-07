@@ -11,6 +11,7 @@ import (
         "strconv"
 
 	"github.com/hashicorp/terraform/helper/schema"
+        "github.com/hashicorp/terraform/helper/validation"
 )
 
 type DiskResponse struct {
@@ -49,6 +50,11 @@ func resourceVdisk() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
+                                ValidateFunc: validation.StringInSlice([]string{
+                                        "host",
+                                        "ip",
+                                        "iqn",
+                                }, true),
 			},
 		},
 	}

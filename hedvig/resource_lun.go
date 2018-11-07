@@ -22,21 +22,24 @@ func resourceLun() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceLunCreate,
 		Read:   resourceLunRead,
-		Update: resourceLunUpdate,
+		//Update: resourceLunUpdate,
 		Delete: resourceLunDelete,
 
 		Schema: map[string]*schema.Schema{
 			"vdisk": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+                                ForceNew: true,
 			},
 			"controller": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+                                ForceNew: true,
 			},
 			"cluster": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+                                ForceNew: true,
 			},
 		},
 	}

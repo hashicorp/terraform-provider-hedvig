@@ -1,11 +1,11 @@
 package hedvig
 
 import (
-	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"os"
+        "errors"
 	"testing"
 )
 
@@ -59,4 +59,14 @@ func testAccCheckHedvigVdiskExists(n string) resource.TestCheckFunc {
 
 		return nil
 	}
+}
+
+func testAccCheckHedvigVdiskSize(n string) resource.TestCheckFunc {
+        return func(s *terraform.State) error {
+                _, ok := s.RootModule().Resources[n]
+                if !ok {
+			return fmt.Errorf("Not found: %s", n)
+                }
+                return nil
+        }
 }

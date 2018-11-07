@@ -60,10 +60,12 @@ func providerSchema() map[string]*schema.Schema {
 		"username": &schema.Schema{
 			Type:     schema.TypeString,
 			Required: true,
+			DefaultFunc: schema.EnvDefaultFunc("HV_TESTUSER", ""),
 		},
 		"password": &schema.Schema{
 			Type:     schema.TypeString,
 			Required: true,
+                        DefaultFunc: schema.EnvDefaultFunc("HV_TESTPASS", ""),
 		},
 		"node": &schema.Schema{
 			Type:     schema.TypeString,

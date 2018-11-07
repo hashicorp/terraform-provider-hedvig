@@ -20,7 +20,7 @@ func resourceMount() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceMountCreate,
 		Read:   resourceMountRead,
-		Update: resourceMountUpdate,
+		//Update: resourceMountUpdate,
 		Delete: resourceMountDelete,
 
 		Schema: map[string]*schema.Schema{

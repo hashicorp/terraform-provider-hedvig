@@ -28,29 +28,34 @@ func resourceAccess() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceAccessCreate,
 		Read:   resourceAccessRead,
-		Update: resourceAccessUpdate,
+		//Update: resourceAccessUpdate,
 		Delete: resourceAccessDelete,
 
 		Schema: map[string]*schema.Schema{
 			"cluster": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"vdisk": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"host": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"address": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"type": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 		},
 	}
