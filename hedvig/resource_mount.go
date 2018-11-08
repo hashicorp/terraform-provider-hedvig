@@ -71,7 +71,7 @@ func resourceMountCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("body: %s", body)
 
-	d.SetId("mount-" + d.Get("vdisk").(string))
+	d.SetId("mount-" + d.Get("vdisk").(string) + "-" + d.Get("controller").(string))
 
 	return resourceMountRead(d, meta)
 }

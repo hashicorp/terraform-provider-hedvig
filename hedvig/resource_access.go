@@ -89,7 +89,7 @@ func resourceAccessCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("body: %s", body)
 
-	d.SetId("access-" + d.Get("vdisk").(string) + "-" + d.Get("address").(string))
+	d.SetId("access-" + d.Get("vdisk").(string) + "-" + d.Get("host").(string) + "-" + d.Get("address").(string))
 
 	return resourceAccessRead(d, meta)
 }

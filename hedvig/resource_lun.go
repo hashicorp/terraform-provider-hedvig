@@ -73,7 +73,7 @@ func resourceLunCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("body: %s", body)
 
-	d.SetId("lun-" + d.Get("vdisk").(string))
+	d.SetId("lun-" + d.Get("vdisk").(string) + "-" + d.Get("controller").(string))
 
 	return resourceLunRead(d, meta)
 }

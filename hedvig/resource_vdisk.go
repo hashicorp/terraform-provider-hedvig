@@ -93,7 +93,7 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("body: %s", body)
 
-	d.SetId("id-" + d.Get("name").(string))
+	d.SetId("id-" + d.Get("name").(string) + "-" + d.Get("cluster").(string) + "-" + d.Get("type").(string))
 
 	return resourceVdiskRead(d, meta)
 }
