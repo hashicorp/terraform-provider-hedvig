@@ -133,7 +133,7 @@ func resourceMountUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		sessionID := GetSessionId(d, meta.(*HedvigClient))
 
-		q.Set("request", fmt.Sprintf("{type:Unmount, category:VirtualDiskManagemenet, params:{virtualDisk:'%s', targets:['%s']}, sessionId: '%s'}", dOldVDisk.(string), dOldController.(string), sessionID))
+		q.Set("request", fmt.Sprintf("{type:Unmount, category:VirtualDiskManagement, params:{virtualDisk:'%s', targets:['%s']}, sessionId: '%s'}", dOldVDisk.(string), dOldController.(string), sessionID))
 
 		u.RawQuery = q.Encode()
 		log.Printf("URL: %v", u.String())
