@@ -63,10 +63,14 @@ func testAccCheckHedvigVdiskExists(n string) resource.TestCheckFunc {
 
 func testAccCheckHedvigVdiskSize(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		_, ok := s.RootModule().Resources[n]
+		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
 		}
+		return fmt.Errorf("rs type %[1]T, value %[1]v\n", rs)
+                //if rs.size < 1 {
+                //        return errors.New("No size for vdisk")
+                //}
 		return nil
 	}
 }

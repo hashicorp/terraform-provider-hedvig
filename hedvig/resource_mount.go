@@ -110,11 +110,11 @@ func resourceMountRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	//if len(mount.Result) < 1 {
-	//	return errors.New("Array too small")
-	//}
+	if len(mount.Result) < 1 {
+		return errors.New("Array too small")
+	}
 
-	//d.Set("controller", mount.Result[0])
+	d.Set("controller", mount.Result[0])
 
 	return nil
 }

@@ -18,7 +18,7 @@ func TestAccHedvigAccess(t *testing.T) {
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccHedvigAccessConfig,
-				Check:  resource.ComposeTestCheckFunc(testAccCheckHedvigAccessExists("hedvig_access.test-access1"), testAccCheckHedvigAccessExists("hedvig_access.test-access2")),
+				Check:  resource.ComposeTestCheckFunc(testAccCheckHedvigAccessExists("hedvig_access.test-access1"), testAccCheckHedvigAccessExists("hedvig_access.test-access2"), testAccCheckHedvigAccessCheckDestroyed("hedvig_access.test-access2")),
 			},
 		},
 	})
