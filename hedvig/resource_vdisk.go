@@ -83,7 +83,7 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 	if resp.StatusCode == 404 {
 		d.SetId("")
 		strresp := strconv.Itoa(resp.StatusCode)
-		return errors.New(strresp)
+		log.Print("Received " + strresp + " error, removing resource from state.")
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
@@ -106,8 +106,10 @@ func resourceVdiskRead(d *schema.ResourceData, meta interface{}) error {
 
 	sessionID := GetSessionId(d, meta.(*HedvigClient))
 
+        dsplit = strings.Split(d.Id(), '-')
+
 	q := url.Values{}
-	q.Set("request", fmt.Sprintf("{type:VirtualDiskDetails,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", d.Get("name").(string), sessionID))
+	q.Set("request", fmt.Sprintf("{typeVirtualDiskDetails,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", dsplit[1], sessionID))
 
 	u.RawQuery = q.Encode()
 	log.Printf("URL: %v", u.String())

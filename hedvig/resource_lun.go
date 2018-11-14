@@ -86,8 +86,10 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 
 	sessionID := GetSessionId(d, meta.(*HedvigClient))
 
+        dsplit := strings.Split(d.Id(), '-')
+
 	q := url.Values{}
-	q.Set("request", fmt.Sprintf("{type:VirtualDiskDetails,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", d.Get("vdisk").(string), sessionID))
+	q.Set("request", fmt.Sprintf("{type:VirtualDiskDetails,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", dsplit[1], sessionID))
 
 	u.RawQuery = q.Encode()
 
@@ -97,7 +99,7 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	if resp.StatusCode == 404 {
 		d.SetId("")
-		log.Fatal(resp.StatusCode)
+		log.Print("Lun resource not found in virtual disk, clearing from state")
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -112,7 +114,7 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if len(lun.Result.TargetLocations) < 1 {
-		return errors.New("Array too short")
+		return errors.New("Not enough results found to define resource")
 	}
 
 	//d.Set("vdisk", strings.split(lun.Result.TargetLocations[0], ":")[0])

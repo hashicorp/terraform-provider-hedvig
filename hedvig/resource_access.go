@@ -128,7 +128,7 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if len(access.Result) < 1 {
-		return errors.New("Incorrect Array Size")
+		return errors.New("Not enough results to find host in")
 	}
 
 	d.Set("host", access.Result[0].Host)

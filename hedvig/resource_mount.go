@@ -84,8 +84,10 @@ func resourceMountRead(d *schema.ResourceData, meta interface{}) error {
 
 	sessionID := GetSessionId(d, meta.(*HedvigClient))
 
+        dsplit := strings.Split(d.Id(), '-')
+
 	q := url.Values{}
-	q.Set("request", fmt.Sprintf("{type:ListExportedTargets,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", d.Get("vdisk"), sessionID))
+	q.Set("request", fmt.Sprintf("{type:ListExportedTargets,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", dsplit[1], sessionID))
 
 	u.RawQuery = q.Encode()
 
@@ -96,7 +98,7 @@ func resourceMountRead(d *schema.ResourceData, meta interface{}) error {
 	if resp.StatusCode == 404 {
 		d.SetId("")
 		s := strconv.Itoa(resp.StatusCode)
-		return errors.New(s)
+		log.Print("Received " + s + ", removing resource from state")
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -111,7 +113,7 @@ func resourceMountRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if len(mount.Result) < 1 {
-		return errors.New("Array too small")
+		return errors.New("Resource not found, returning error.")
 	}
 
 	d.Set("controller", mount.Result[0])
