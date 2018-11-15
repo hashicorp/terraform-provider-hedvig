@@ -165,7 +165,7 @@ func resourceAccessUpdate(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 
-		body, _ := ioutil.ReadAll(resp.Body)
+		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return err
 		}

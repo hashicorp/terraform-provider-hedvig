@@ -109,7 +109,7 @@ func resourceVdiskRead(d *schema.ResourceData, meta interface{}) error {
         dsplit = strings.Split(d.Id(), '-')
 
 	q := url.Values{}
-	q.Set("request", fmt.Sprintf("{typeVirtualDiskDetails,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", dsplit[1], sessionID))
+	q.Set("request", fmt.Sprintf("{type:VirtualDiskDetails,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", dsplit[1], sessionID))
 
 	u.RawQuery = q.Encode()
 	log.Printf("URL: %v", u.String())

@@ -110,6 +110,9 @@ func testAccCheckHedvigAccessCheckDestroyed(n string) resource.TestCheckFunc {
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
 		}
+                if resourceAccessRead == nil {
+                        return fmt.Error("Access not destroyed")
+                }
 		if rs.Primary.ID == "" {
 			return nil
 		}
