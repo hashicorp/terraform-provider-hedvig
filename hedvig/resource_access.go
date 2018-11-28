@@ -28,7 +28,6 @@ func resourceAccess() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceAccessCreate,
 		Read:   resourceAccessRead,
-		//Update: resourceAccessUpdate,
 		Delete: resourceAccessDelete,
 
 		Schema: map[string]*schema.Schema{
@@ -113,7 +112,7 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	if resp.StatusCode == 404 {
 		d.SetId("")
-		return err
+		return nil
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {

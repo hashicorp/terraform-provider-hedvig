@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 )
 
 type MountResponse struct {
@@ -20,7 +21,6 @@ func resourceMount() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceMountCreate,
 		Read:   resourceMountRead,
-		//Update: resourceMountUpdate,
 		Delete: resourceMountDelete,
 
 		Schema: map[string]*schema.Schema{
@@ -84,7 +84,7 @@ func resourceMountRead(d *schema.ResourceData, meta interface{}) error {
 
 	sessionID := GetSessionId(d, meta.(*HedvigClient))
 
-        dsplit := strings.Split(d.Id(), '-')
+        dsplit := strings.Split(d.Id(), "-")
 
 	q := url.Values{}
 	q.Set("request", fmt.Sprintf("{type:ListExportedTargets,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", dsplit[1], sessionID))
@@ -99,6 +99,7 @@ func resourceMountRead(d *schema.ResourceData, meta interface{}) error {
 		d.SetId("")
 		s := strconv.Itoa(resp.StatusCode)
 		log.Print("Received " + s + ", removing resource from state")
+		return nil
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -162,7 +163,7 @@ func resourceMountDelete(d *schema.ResourceData, meta interface{}) error {
 
 	sessionID := GetSessionId(d, meta.(*HedvigClient))
 
-	q.Set("request", fmt.Sprintf("{type:Unmount, category:VirtualDiskManagement, params:{virtualDisk:'%s', targets:['%s']}, sessionId: '%s'}", d.Get("vdisk"), d.Get("controller"),
+	q.Set("request", fmt.Sprintf("{type:Unmount, category:VirtualDiskManagement, params:{virtualDisk:'%s', targets:['%s']}, sessionId: '%s'}", d.Get("vdisk").(string), d.Get("controller").(string),
 		sessionID))
 	u.RawQuery = q.Encode()
 	log.Printf("URL: %v", u.String())

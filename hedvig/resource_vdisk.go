@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
@@ -21,6 +22,7 @@ type DiskResponse struct {
 			Units string `json:"units"`
 			Value int    `json:"value"`
 		} `json:"size"`
+		DiskType string `json:"diskType"`
 	} `json:"result"`
 }
 
@@ -84,6 +86,7 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 		d.SetId("")
 		strresp := strconv.Itoa(resp.StatusCode)
 		log.Print("Received " + strresp + " error, removing resource from state.")
+		return nil
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
@@ -106,7 +109,11 @@ func resourceVdiskRead(d *schema.ResourceData, meta interface{}) error {
 
 	sessionID := GetSessionId(d, meta.(*HedvigClient))
 
-        dsplit = strings.Split(d.Id(), '-')
+        dsplit := strings.Split(d.Id(), "-")
+
+	if len(dsplit) < 2 {
+		errors.New("Too few fields in ID")
+	}
 
 	q := url.Values{}
 	q.Set("request", fmt.Sprintf("{type:VirtualDiskDetails,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", dsplit[1], sessionID))
@@ -132,7 +139,7 @@ func resourceVdiskRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	//d.Set("cluster", disk.Result.Cluster)
-	//d.Set("type", disk.Result.Type)
+	d.Set("type", disk.Result.DiskType)
 	d.Set("name", disk.Result.VDiskName)
 	d.Set("size", disk.Result.Size.Value)
 
