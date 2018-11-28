@@ -109,7 +109,7 @@ func resourceVdiskRead(d *schema.ResourceData, meta interface{}) error {
 
 	sessionID := GetSessionId(d, meta.(*HedvigClient))
 
-        dsplit := strings.Split(d.Id(), "-")
+	dsplit := strings.Split(d.Id(), "-")
 
 	if len(dsplit) < 2 {
 		errors.New("Too few fields in ID")

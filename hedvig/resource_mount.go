@@ -84,7 +84,7 @@ func resourceMountRead(d *schema.ResourceData, meta interface{}) error {
 
 	sessionID := GetSessionId(d, meta.(*HedvigClient))
 
-        dsplit := strings.Split(d.Id(), "-")
+	dsplit := strings.Split(d.Id(), "-")
 
 	q := url.Values{}
 	q.Set("request", fmt.Sprintf("{type:ListExportedTargets,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", dsplit[1], sessionID))
