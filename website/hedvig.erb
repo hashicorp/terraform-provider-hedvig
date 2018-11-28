@@ -1,0 +1,36 @@
+<% wrap_layout :inner do %>
+  <% content_for :sidebar do %>
+    <div class="docs-sidebar hidden-print affix-top" role="complementary">
+      <ul class="nav docs-sidenav">
+        <li<%= sidebar_current("docs-home") %>>
+          <a href="/docs/providers/index.html">All Providers</a>
+        </li>
+
+        <li<%= sidebar_current("docs-hedvig-index") %>>
+          <a href="/docs/providers/hedvig/index.html">Hedvig Provider</a>
+        </li>
+
+        <li<%= sidebar_current("docs-hedvig-resource") %>>
+          <a href="#">Resources</a>
+          <ul class="nav nav-visible">
+            <li<%= sidebar_current("docs-hedvig-resource-dir") %>>
+              <a href="/docs/providers/hedvig/r/access.html">access resource</a>
+            </li>
+            <li>
+              <a href="/docs/providers/hedvig/r/lun.html">lun resource</a>
+            </li>
+            <li>
+              <a href="/docs/providers/hedvig/r/mount.html">mount resource</a>
+            </li>
+            <li>
+              <a href="/docs/providers/hedvig/r/vdisk.html">vdisk resource</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= yield %>
+<% end %> $test_page_node = hva_config_array($config->{'config'}, 'all:children');
+
