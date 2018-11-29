@@ -48,7 +48,11 @@ func resourceMountCreate(d *schema.ResourceData, meta interface{}) error {
 
 	q := url.Values{}
 
-	sessionID := GetSessionId(d, meta.(*HedvigClient))
+	sessionID, err := GetSessionId(d, meta.(*HedvigClient))
+
+	if err != nil {
+		return err
+	}
 
 	q.Set("request", fmt.Sprintf("{type:Mount, category:VirtualDiskManagement, params:{virtualDisk:'%s', targets:['%s']}, sessionId:'%s'}", d.Get("vdisk"), d.Get("controller"),
 		sessionID))
@@ -77,7 +81,11 @@ func resourceMountRead(d *schema.ResourceData, meta interface{}) error {
 	u.Path = "/rest/"
 	u.Scheme = "http"
 
-	sessionID := GetSessionId(d, meta.(*HedvigClient))
+	sessionID, err := GetSessionId(d, meta.(*HedvigClient))
+
+	if err != nil {
+		return err
+	}
 
 	q := url.Values{}
 	q.Set("request", fmt.Sprintf("{type:ListExportedTargets,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", d.Get("vdisk"), sessionID))
@@ -117,7 +125,11 @@ func resourceMountUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		q := url.Values{}
 
-		sessionID := GetSessionId(d, meta.(*HedvigClient))
+		sessionID, err := GetSessionId(d, meta.(*HedvigClient))
+
+		if err != nil {
+			return err
+		}
 
 		q.Set("request", fmt.Sprintf("{type:Unmount, category:VirtualDiskManagemenet, params:{virtualDisk:'%s', targets:['%s']}, sessionId: '%s'}", dOldVDisk.(string), dOldController.(string), sessionID))
 
@@ -145,7 +157,11 @@ func resourceMountDelete(d *schema.ResourceData, meta interface{}) error {
 
 	q := url.Values{}
 
-	sessionID := GetSessionId(d, meta.(*HedvigClient))
+	sessionID, err := GetSessionId(d, meta.(*HedvigClient))
+
+	if err != nil {
+		return err
+	}
 
 	q.Set("request", fmt.Sprintf("{type:Unmount, category:VirtualDiskManagement, params:{virtualDisk:'%s', targets:['%s']}, sessionId: '%s'}", d.Get("vdisk"), d.Get("controller"),
 		sessionID))
