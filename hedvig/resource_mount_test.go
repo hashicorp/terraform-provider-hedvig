@@ -30,19 +30,17 @@ provider "hedvig" {
 }
 
 resource "hedvig_vdisk" "test-mount-vdisk" {
-  cluster = "%s"
   name = "%s"
   size = 11
   type = "NFS"
 }
 
 resource "hedvig_mount" "test-mount" {
-  cluster = "%s"
   vdisk = "${hedvig_vdisk.test-mount-vdisk.name}"
   controller = "%s"
 }
 `, os.Getenv("HV_TESTNODE"), os.Getenv("HV_TESTUSER"), os.Getenv("HV_TESTPASS"),
-	os.Getenv("HV_TESTCLUST"), genRandomVdiskName(), os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTCONT"))
+	genRandomVdiskName(), os.Getenv("HV_TESTCONT"))
 
 func testAccCheckHedvigMountExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {

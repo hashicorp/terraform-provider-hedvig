@@ -34,11 +34,6 @@ func resourceMount() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"cluster": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
 		},
 	}
 }
@@ -123,7 +118,7 @@ func resourceMountRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMountUpdate(d *schema.ResourceData, meta interface{}) error {
-	if d.HasChange("cluster") || d.HasChange("vdisk") || d.HasChange("controller") {
+	if d.HasChange("vdisk") || d.HasChange("controller") {
 		dOldVDisk, _ := d.GetChange("vdisk")
 		dOldController, _ := d.GetChange("controller")
 

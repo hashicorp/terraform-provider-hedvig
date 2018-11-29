@@ -100,8 +100,9 @@ func GetSessionId(d *schema.ResourceData, p *HedvigClient) string {
 	u.Scheme = "http"
 
 	q := url.Values{}
-	q.Set("request", fmt.Sprintf("{type:Login,category:UserManagement,params:{userName:'%s',password:'%s',cluster:'%s.hedviginc.com'}}",
-		p.Username, p.Password, d.Get("cluster").(string)))
+	// q.Set("request", fmt.Sprintf("{type:Login,category:UserManagement,params:{userName:'%s',password:'%s',cluster:'%s.hedviginc.com'}}",
+	q.Set("request", fmt.Sprintf("{type:Login,category:UserManagement,params:{userName:'%s',password:'%s'}}",
+		p.Username, p.Password)) //, d.Get("cluster").(string)))
 	log.Printf("URL: %+v\n", u.String())
 
 	u.RawQuery = q.Encode()

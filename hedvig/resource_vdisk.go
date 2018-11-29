@@ -43,11 +43,6 @@ func resourceVdisk() *schema.Resource {
 				Type:     schema.TypeInt,
 				Required: true,
 			},
-			"cluster": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
 			"type": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
@@ -96,7 +91,7 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("body: %s", body)
 
-	d.SetId("id-" + d.Get("name").(string) + "-" + d.Get("cluster").(string) + "-" + d.Get("type").(string))
+	d.SetId("id-" + d.Get("name").(string) + "-" + d.Get("type").(string))
 
 	return resourceVdiskRead(d, meta)
 }
@@ -138,7 +133,6 @@ func resourceVdiskRead(d *schema.ResourceData, meta interface{}) error {
 		return errors.New(erstr)
 	}
 
-	//d.Set("cluster", disk.Result.Cluster)
 	d.Set("type", disk.Result.DiskType)
 	d.Set("name", disk.Result.VDiskName)
 	d.Set("size", disk.Result.Size.Value)

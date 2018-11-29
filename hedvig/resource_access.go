@@ -31,11 +31,6 @@ func resourceAccess() *schema.Resource {
 		Delete: resourceAccessDelete,
 
 		Schema: map[string]*schema.Schema{
-			"cluster": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
 			"vdisk": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
@@ -136,7 +131,7 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceAccessUpdate(d *schema.ResourceData, meta interface{}) error {
-	if d.HasChange("address") || d.HasChange("host") || d.HasChange("cluster") || d.HasChange("vdisk") || d.HasChange("type") {
+	if d.HasChange("address") || d.HasChange("host") || d.HasChange("vdisk") || d.HasChange("type") {
 		dOldDisk, _ := d.GetChange("vdisk")
 		dOldHost, _ := d.GetChange("host")
 		dOldAddress, _ := d.GetChange("address")

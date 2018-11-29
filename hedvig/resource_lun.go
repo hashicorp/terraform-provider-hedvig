@@ -35,11 +35,6 @@ func resourceLun() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"cluster": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
 		},
 	}
 }
@@ -121,13 +116,19 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 		return errors.New("Not enough results found to define resource")
 	}
 
-	d.Set("controller", strings.Split(lun.Result.TargetLocations[0], ":")[0])
+	controllerparts := strings.Split(lun.Result.TargetLocations[0], ":")[0]
+
+	if len(controllerparts) < 1 {
+		return errors.New("Insufficient data in lun.Result")
+	}
+
+	d.Set("controller", controllerparts)
 
 	return nil
 }
 
 func resourceLunUpdate(d *schema.ResourceData, meta interface{}) error {
-	if d.HasChange("cluster") || d.HasChange("vdisk") || d.HasChange("controller") {
+	if d.HasChange("vdisk") || d.HasChange("controller") {
 		dOldVDisk, _ := d.GetChange("vdisk")
 		dOldController, _ := d.GetChange("controller")
 
