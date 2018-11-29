@@ -47,7 +47,11 @@ func resourceLunCreate(d *schema.ResourceData, meta interface{}) error {
 
 	q := url.Values{}
 
-	sessionID := GetSessionId(d, meta.(*HedvigClient))
+	sessionID, err := GetSessionId(d, meta.(*HedvigClient))
+
+	if err != nil {
+		return err
+	}
 
 	q.Set("request", fmt.Sprintf("{type:AddLun, category:VirtualDiskManagement, params:{virtualDisks:['%s'], targets:['%s'], readonly:false}, sessionId:'%s'}", d.Get("vdisk").(string), d.Get("controller").(string),
 		sessionID))
@@ -78,7 +82,11 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 	u.Path = "/rest/"
 	u.Scheme = "http"
 
-	sessionID := GetSessionId(d, meta.(*HedvigClient))
+	sessionID, err := GetSessionId(d, meta.(*HedvigClient))
+
+	if err != nil {
+		return err
+	}
 
 	dsplit := strings.Split(d.Id(), "-")
 
@@ -139,7 +147,11 @@ func resourceLunUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		q := url.Values{}
 
-		sessionID := GetSessionId(d, meta.(*HedvigClient))
+		sessionID, err := GetSessionId(d, meta.(*HedvigClient))
+
+		if err != nil {
+			return err
+		}
 
 		q.Set("request", fmt.Sprintf("{type:UnmapLun, category:VirtualDiskManagement, params:{virtualDisk:'%s', target:'%s'}, sessionId: '%s'}", dOldVDisk.(string), dOldController.(string), sessionID))
 
@@ -166,7 +178,11 @@ func resourceLunDelete(d *schema.ResourceData, meta interface{}) error {
 
 	q := url.Values{}
 
-	sessionID := GetSessionId(d, meta.(*HedvigClient))
+	sessionID, err := GetSessionId(d, meta.(*HedvigClient))
+
+	if err != nil {
+		return err
+	}
 
 	q.Set("request", fmt.Sprintf("{type:UnmapLun, category:VirtualDiskManagement, params:{virtualDisk:'%s', target:'%s'}, sessionId: '%s'}", d.Get("vdisk"), d.Get("controller"),
 		sessionID))
