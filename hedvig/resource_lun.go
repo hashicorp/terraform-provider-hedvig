@@ -158,7 +158,7 @@ func resourceLunUpdate(d *schema.ResourceData, meta interface{}) error {
 		u.RawQuery = q.Encode()
 		log.Printf("URL: %v", u.String())
 
-		_, err := http.Get(u.String())
+		_, err = http.Get(u.String())
 
 		if err != nil {
 			return err

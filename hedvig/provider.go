@@ -93,7 +93,7 @@ func providerResources() map[string]*schema.Resource {
 	}
 }
 
-func GetSessionId(d *schema.ResourceData, p *HedvigClient) string, error {
+func GetSessionId(d *schema.ResourceData, p *HedvigClient) (string, error) {
 	u := url.URL{}
 	u.Host = p.Node
 	u.Path = "/rest/"
@@ -121,7 +121,7 @@ func GetSessionId(d *schema.ResourceData, p *HedvigClient) string, error {
 	err = json.Unmarshal(body, &login)
 
 	if err != nil {
-		return nil, log.Fatalf("Error unmarshalling: %s", err)
+		return "", err
 	}
 	log.Printf("login: %+v", login)
 
