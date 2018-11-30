@@ -63,7 +63,11 @@ func resourceAccessCreate(d *schema.ResourceData, meta interface{}) error {
 
 	q := url.Values{}
 
-	sessionID := GetSessionId(d, meta.(*HedvigClient))
+	sessionID, err := GetSessionId(d, meta.(*HedvigClient))
+
+	if err != nil {
+		return err
+	}
 
 	q.Set("request", fmt.Sprintf("{type:PersistACLAccess, category:VirtualDiskManagement, params:{virtualDisks:['%s'], host:'%s', address:'%s', type:'%s'}, sessionId:'%s'}", d.Get("vdisk").(string), d.Get("host").(string), d.Get("address").(string),
 		d.Get("type").(string), sessionID))
@@ -94,7 +98,11 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
 	u.Path = "/rest/"
 	u.Scheme = "http"
 
-	sessionID := GetSessionId(d, meta.(*HedvigClient))
+	sessionID, err := GetSessionId(d, meta.(*HedvigClient))
+
+	if err != nil {
+		return err
+	}
 
 	q := url.Values{}
 	q.Set("request", fmt.Sprintf("{type:GetACLInformation,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", d.Get("vdisk").(string), sessionID))
@@ -143,7 +151,11 @@ func resourceAccessUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		q := url.Values{}
 
-		sessionID := GetSessionId(d, meta.(*HedvigClient))
+		sessionID, err := GetSessionId(d, meta.(*HedvigClient))
+
+		if err != nil {
+			return err
+		}
 
 		log.Printf("dOldDisk: %s", dOldDisk.(string))
 		log.Printf("dOldHost: %s", dOldHost.(string))
@@ -180,7 +192,11 @@ func resourceAccessDelete(d *schema.ResourceData, meta interface{}) error {
 
 	q := url.Values{}
 
-	sessionID := GetSessionId(d, meta.(*HedvigClient))
+	sessionID, err := GetSessionId(d, meta.(*HedvigClient))
+
+	if err != nil {
+		return err
+	}
 
 	q.Set("request", fmt.Sprintf("{type:RemoveACLAccess, category:VirtualDiskManagement, params:{virtualDisk:'%s', host:'%s', address:['%s']}, sessionId: '%s'}", d.Get("vdisk").(string), d.Get("host").(string), d.Get("address").(string),
 		sessionID))

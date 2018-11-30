@@ -64,7 +64,11 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 
 	q := url.Values{}
 
-	sessionID := GetSessionId(d, meta.(*HedvigClient))
+	sessionID, err := GetSessionId(d, meta.(*HedvigClient))
+
+	if err != nil {
+		return err
+	}
 
 	q.Set("request", fmt.Sprintf("{type:AddVirtualDisk, category:VirtualDiskManagement, params:{name:'%s', size:{unit:'GB', value:%d}, diskType:%s, scsi3pr:false}, sessionId:'%s'}", d.Get("name").(string), d.Get("size").(int), d.Get("type").(string),
 		sessionID))
@@ -102,7 +106,11 @@ func resourceVdiskRead(d *schema.ResourceData, meta interface{}) error {
 	u.Path = "/rest/"
 	u.Scheme = "http"
 
-	sessionID := GetSessionId(d, meta.(*HedvigClient))
+	sessionID, err := GetSessionId(d, meta.(*HedvigClient))
+
+	if err != nil {
+		return err
+	}
 
 	dsplit := strings.Split(d.Id(), "-")
 
@@ -148,7 +156,11 @@ func resourceVdiskUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	q := url.Values{}
 
-	sessionID := GetSessionId(d, meta.(*HedvigClient))
+	sessionID, err := GetSessionId(d, meta.(*HedvigClient))
+
+	if err != nil {
+		return err
+	}
 
 	if d.HasChange("size") {
 		q.Set("request", fmt.Sprintf("{type:ResizeDisks, category:VirtualDiskManagement, params:{virtualDisks:['%s'], size:{unit:'GB', value:%d}}, sessionId:'%s'}", d.Get("name").(string), d.Get("size").(int),
@@ -182,7 +194,11 @@ func resourceVdiskDelete(d *schema.ResourceData, meta interface{}) error {
 
 	q := url.Values{}
 
-	sessionID := GetSessionId(d, meta.(*HedvigClient))
+	sessionID, err := GetSessionId(d, meta.(*HedvigClient))
+
+	if err != nil {
+		return err
+	}
 
 	q.Set("request", fmt.Sprintf("{type:DeleteVDisk, category:VirtualDiskManagement, params:{virtualDisks:['%s']}, sessionId:'%s'}, sessionId:'%s'}", d.Get("name").(string), sessionID,
 		sessionID))

@@ -93,16 +93,15 @@ func providerResources() map[string]*schema.Resource {
 	}
 }
 
-func GetSessionId(d *schema.ResourceData, p *HedvigClient) string {
+func GetSessionId(d *schema.ResourceData, p *HedvigClient) string, error {
 	u := url.URL{}
 	u.Host = p.Node
 	u.Path = "/rest/"
 	u.Scheme = "http"
 
 	q := url.Values{}
-	// q.Set("request", fmt.Sprintf("{type:Login,category:UserManagement,params:{userName:'%s',password:'%s',cluster:'%s.hedviginc.com'}}",
-	q.Set("request", fmt.Sprintf("{type:Login,category:UserManagement,params:{userName:'%s',password:'%s'}}",
-		p.Username, p.Password)) //, d.Get("cluster").(string)))
+	q.Set("request", fmt.Sprintf("{type:Login,category:UserManagement,params:{userName:'%s',password:'%s',cluster:''}}",
+		p.Username, p.Password))
 	log.Printf("URL: %+v\n", u.String())
 
 	u.RawQuery = q.Encode()
@@ -122,11 +121,11 @@ func GetSessionId(d *schema.ResourceData, p *HedvigClient) string {
 	err = json.Unmarshal(body, &login)
 
 	if err != nil {
-		log.Fatalf("Error unmarshalling: %s", err)
+		return nil, log.Fatalf("Error unmarshalling: %s", err)
 	}
 	log.Printf("login: %+v", login)
 
 	log.Printf("session: %s", login.Result.SessionID)
 
-	return login.Result.SessionID
+	return login.Result.SessionID, nil
 }
