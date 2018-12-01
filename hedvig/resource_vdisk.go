@@ -81,7 +81,7 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	if resp.StatusCode == 404 {
+	if resp.StatusCode != 200 {
 		d.SetId("")
 		strresp := strconv.Itoa(resp.StatusCode)
 		log.Print("Received " + strresp + " error, removing resource from state.")
@@ -95,7 +95,7 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("body: %s", body)
 
-	d.SetId("id-" + d.Get("name").(string) + "-" + d.Get("type").(string))
+	d.SetId("id$" + d.Get("name").(string) + "$" + d.Get("type").(string))
 
 	return resourceVdiskRead(d, meta)
 }
@@ -112,7 +112,7 @@ func resourceVdiskRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	dsplit := strings.Split(d.Id(), "-")
+	dsplit := strings.Split(d.Id(), "$")
 
 	if len(dsplit) < 2 {
 		errors.New("Too few fields in ID")

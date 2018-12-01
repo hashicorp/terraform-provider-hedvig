@@ -15,6 +15,7 @@ package hedvig
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
@@ -102,7 +103,6 @@ func GetSessionId(d *schema.ResourceData, p *HedvigClient) (string, error) {
 	q := url.Values{}
 	q.Set("request", fmt.Sprintf("{type:Login,category:UserManagement,params:{userName:'%s',password:'%s',cluster:''}}",
 		p.Username, p.Password))
-	log.Printf("URL: %+v\n", u.String())
 
 	u.RawQuery = q.Encode()
 
@@ -118,6 +118,11 @@ func GetSessionId(d *schema.ResourceData, p *HedvigClient) (string, error) {
 	}
 
 	login := LoginResponse{}
+
+	if login.Status != "ok" {
+		return "", errors.New(login.Status)
+	}
+
 	err = json.Unmarshal(body, &login)
 
 	if err != nil {

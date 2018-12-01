@@ -71,7 +71,7 @@ func resourceLunCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("body: %s", body)
 
-	d.SetId("lun-" + d.Get("vdisk").(string) + "-" + d.Get("controller").(string))
+	d.SetId("lun$" + d.Get("vdisk").(string) + "$" + d.Get("controller").(string))
 
 	return resourceLunRead(d, meta)
 }
@@ -88,7 +88,7 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	dsplit := strings.Split(d.Id(), "-")
+	dsplit := strings.Split(d.Id(), "$")
 
 	if len(dsplit) < 2 {
 		return errors.New("Too few fields in ID")
@@ -103,7 +103,7 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode == 404 {
+	if resp.StatusCode != 200 {
 		d.SetId("")
 		log.Print("Lun resource not found in virtual disk, clearing from state")
 		return nil

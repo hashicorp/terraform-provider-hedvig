@@ -63,6 +63,10 @@ func resourceMountCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
+	if resp.Status != "ok" {
+		return errors.New(resp.Status)
+	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
@@ -70,7 +74,7 @@ func resourceMountCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("body: %s", body)
 
-	d.SetId("mount-" + d.Get("vdisk").(string) + "-" + d.Get("controller").(string))
+	d.SetId("mount$" + d.Get("vdisk").(string) + "$" + d.Get("controller").(string))
 
 	return resourceMountRead(d, meta)
 }
@@ -87,7 +91,11 @@ func resourceMountRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	dsplit := strings.Split(d.Id(), "-")
+	dsplit := strings.Split(d.Id(), "$")
+
+	if len(dsplit) < 2 {
+		return errors.New("Not enough properties in ID")
+	}
 
 	q := url.Values{}
 	q.Set("request", fmt.Sprintf("{type:ListExportedTargets,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", dsplit[1], sessionID))
@@ -98,7 +106,7 @@ func resourceMountRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if resp.StatusCode == 404 {
+	if resp.StatusCode != 200 {
 		d.SetId("")
 		s := strconv.Itoa(resp.StatusCode)
 		log.Print("Received " + s + ", removing resource from state")
