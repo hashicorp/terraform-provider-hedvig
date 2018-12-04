@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 type LunResponse struct {
@@ -19,10 +20,18 @@ type LunResponse struct {
 }
 
 type createLunResponse struct {
-	Result struct {
-		Name   string `json: "name"`
+	Result []struct {
+		Name    string `json:"name"`
+		Targets []struct {
+			Name    string `json:"name"`
+			Message string `json:"message"`
+			Status  string `json:"status"`
+		} `json:"targets"`
 		Status string `json:"status"`
 	} `json:"result"`
+	RequestID string `json:"requestId"`
+	Type      string `json:"type"`
+	Status    string `json:"status"`
 }
 
 type deleteLunResponse struct {
@@ -89,8 +98,8 @@ func resourceLunCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	if createResp.Result.Status != "ok" {
-		return errors.New("Error creating export: " + createResp.Result.Name)
+	if createResp.Result[0].Targets[0].Status != "ok" {
+		return errors.New("Error creating export: " + createResp.Result[0].Targets[0].Message)
 	}
 
 	log.Printf("body: %s", body)
@@ -223,6 +232,10 @@ func resourceLunDelete(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	deleteLunResp := deleteLunResponse{}
+
+	err = json.Unmarshal(body, &deleteLunResp)
 
 	log.Printf("body: %s", body)
 

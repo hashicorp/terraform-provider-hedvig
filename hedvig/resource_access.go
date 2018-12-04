@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
+
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 type AccessResponse struct {
@@ -31,14 +32,14 @@ type deleteAccessResponse struct {
 }
 
 type createAccessResponse struct {
-	Result struct {
-		{
-			Name string `json: name`
-			Status string `json: status`
-		}
-	}
-	Status string `json: status`
-	Type string `json: type`	
+	Result []struct {
+		Name    string `json:"name"`
+		Status  string `json:"status"`
+		Message string `json:"message"`
+	} `json:"result"`
+	RequestId string `json:"requestId"`
+	Status    string `json:"status"`
+	Type      string `json:"type"`
 }
 
 func resourceAccess() *schema.Resource {
@@ -105,6 +106,10 @@ func resourceAccessCreate(d *schema.ResourceData, meta interface{}) error {
 	createStruct := createAccessResponse{}
 
 	err = json.Unmarshal(body, &createStruct)
+
+	if err != nil {
+		return err
+	}
 
 	log.Printf("body: %s", body)
 
@@ -198,8 +203,6 @@ func resourceAccessUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		log.Printf("body: %s", body)
-
-		resourceAccessCreate(d, meta)
 	}
 
 	return resourceAccessRead(d, meta)
