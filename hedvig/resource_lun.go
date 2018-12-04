@@ -18,6 +18,19 @@ type LunResponse struct {
 	} `json:"result"`
 }
 
+type createLunResponse struct {
+	Result struct {
+		Name   string `json: "name"`
+		Status string `json:"status"`
+	} `json:"result"`
+}
+
+type deleteLunResponse struct {
+	RequestId string `json: "requestId"`
+	Status    string `json: "status"`
+	Type      string `json: "type"`
+}
+
 func resourceLun() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceLunCreate,
@@ -69,6 +82,17 @@ func resourceLunCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
+	createResp := createLunResponse{}
+	err = json.Unmarshal(body, &createResp)
+
+	if err != nil {
+		return err
+	}
+
+	if createResp.Result.Status != "ok" {
+		return errors.New("Error creating export: " + createResp.Result.Name)
+	}
+
 	log.Printf("body: %s", body)
 
 	d.SetId("lun$" + d.Get("vdisk").(string) + "$" + d.Get("controller").(string))
@@ -88,14 +112,14 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	dsplit := strings.Split(d.Id(), "$")
+	IdSplit := strings.Split(d.Id(), "$")
 
-	if len(dsplit) < 2 {
-		return errors.New("Too few fields in ID")
+	if len(IdSplit) != 3 {
+		return errors.New("Incorrect number of fields in ID")
 	}
 
 	q := url.Values{}
-	q.Set("request", fmt.Sprintf("{type:VirtualDiskDetails,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", dsplit[1], sessionID))
+	q.Set("request", fmt.Sprintf("{type:VirtualDiskDetails,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", IdSplit[1], sessionID))
 
 	u.RawQuery = q.Encode()
 

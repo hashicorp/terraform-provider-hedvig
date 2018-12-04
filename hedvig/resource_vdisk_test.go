@@ -3,10 +3,11 @@ package hedvig
 import (
 	"errors"
 	"fmt"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
 	"os"
 	"testing"
+
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/terraform"
 )
 
 func TestAccHedvigVdisk(t *testing.T) {
@@ -21,6 +22,8 @@ func TestAccHedvigVdisk(t *testing.T) {
 		},
 	})
 }
+
+// TODO: Add update vdisk test
 
 var testAccHedvigVdiskConfig = fmt.Sprintf(`
 provider "hedvig" {

@@ -17,12 +17,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
+
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/terraform"
 )
 
 type LoginResponse struct {
@@ -106,6 +107,7 @@ func GetSessionId(d *schema.ResourceData, p *HedvigClient) (string, error) {
 
 	u.RawQuery = q.Encode()
 
+	// TODO: remove
 	log.Printf("QUERY: %v\n", u.String())
 
 	resp, err := http.Get(u.String())
@@ -118,19 +120,17 @@ func GetSessionId(d *schema.ResourceData, p *HedvigClient) (string, error) {
 	}
 
 	login := LoginResponse{}
-
-	if login.Status != "ok" {
-		return "", errors.New(login.Status)
-	}
-
 	err = json.Unmarshal(body, &login)
 
 	if err != nil {
 		return "", err
 	}
-	log.Printf("login: %+v", login)
 
-	log.Printf("session: %s", login.Result.SessionID)
+	if login.Status != "ok" {
+		// TODO: railse log level to ERROR
+		log.Printf("GetSessionID failed")
+		return "", errors.New(login.Status)
+	}
 
 	return login.Result.SessionID, nil
 }

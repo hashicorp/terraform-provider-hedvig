@@ -24,6 +24,23 @@ type AccessResponse struct {
 	Type   string `json:"type"`
 }
 
+type deleteAccessResponse struct {
+	RequestId string `json:"requestId"`
+	Status    string `json:"status"`
+	Type      string `json:"type"`
+}
+
+type createAccessResponse struct {
+	Result struct {
+		{
+			Name string `json: name`
+			Status string `json: status`
+		}
+	}
+	Status string `json: status`
+	Type string `json: type`	
+}
+
 func resourceAccess() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceAccessCreate,
@@ -84,6 +101,10 @@ func resourceAccessCreate(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	createStruct := createAccessResponse{}
+
+	err = json.Unmarshal(body, &createStruct)
 
 	log.Printf("body: %s", body)
 
@@ -210,6 +231,14 @@ func resourceAccessDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	deletion := deleteAccessResponse{}
+
+	err = json.Unmarshal(body, &deletion)
+
 	if err != nil {
 		return err
 	}
