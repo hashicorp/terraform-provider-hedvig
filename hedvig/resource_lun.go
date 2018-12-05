@@ -133,6 +133,7 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 	u.RawQuery = q.Encode()
 
 	resp, err := http.Get(u.String())
+
 	if err != nil {
 		return err
 	}

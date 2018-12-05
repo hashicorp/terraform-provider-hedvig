@@ -127,7 +127,7 @@ func GetSessionId(d *schema.ResourceData, p *HedvigClient) (string, error) {
 	}
 
 	if login.Status != "ok" {
-		// TODO: railse log level to ERROR
+		// TODO: raise log level to ERROR
 		log.Printf("GetSessionID failed")
 		return "", errors.New(login.Status)
 	}

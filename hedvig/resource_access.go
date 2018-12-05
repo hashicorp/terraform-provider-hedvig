@@ -111,6 +111,10 @@ func resourceAccessCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
+	if createStruct.Status != "ok" {
+		return errors.New(createStruct.Status)
+	}
+
 	log.Printf("body: %s", body)
 
 	d.SetId("access$" + d.Get("vdisk").(string) + "$" + d.Get("host").(string) + "$" + d.Get("address").(string))
@@ -162,50 +166,6 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("host", access.Result[0].Host)
 
 	return nil
-}
-
-func resourceAccessUpdate(d *schema.ResourceData, meta interface{}) error {
-	if d.HasChange("address") || d.HasChange("host") || d.HasChange("vdisk") || d.HasChange("type") {
-		dOldDisk, _ := d.GetChange("vdisk")
-		dOldHost, _ := d.GetChange("host")
-		dOldAddress, _ := d.GetChange("address")
-
-		u := url.URL{}
-		u.Host = meta.(*HedvigClient).Node
-		u.Path = "/rest/"
-		u.Scheme = "http"
-
-		q := url.Values{}
-
-		sessionID, err := GetSessionId(d, meta.(*HedvigClient))
-
-		if err != nil {
-			return err
-		}
-
-		log.Printf("dOldDisk: %s", dOldDisk.(string))
-		log.Printf("dOldHost: %s", dOldHost.(string))
-		log.Printf("dOldAddress: %s", dOldAddress.(string))
-
-		q.Set("request", fmt.Sprintf("{type:RemoveACLAccess, category:VirtualDiskManagement, params:{virtualDisk:'%s', host:'%s', address:['%s']}, sessionId: '%s'}", dOldDisk.(string), dOldHost.(string), dOldAddress.(string), sessionID))
-		u.RawQuery = q.Encode()
-		log.Printf("URL: %v", u.String())
-
-		resp, err := http.Get(u.String())
-
-		if err != nil {
-			return err
-		}
-
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
-
-		log.Printf("body: %s", body)
-	}
-
-	return resourceAccessRead(d, meta)
 }
 
 func resourceAccessDelete(d *schema.ResourceData, meta interface{}) error {
