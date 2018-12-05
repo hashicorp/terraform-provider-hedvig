@@ -219,5 +219,8 @@ func resourceMountDelete(d *schema.ResourceData, meta interface{}) error {
 	if deleteResp.Status != "ok" {
 		return errors.New("Error deleting mount: " + deleteResp.Message)
 	}
+
+	d.SetId("")
+
 	return nil
 }

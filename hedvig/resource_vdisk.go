@@ -276,5 +276,8 @@ func resourceVdiskDelete(d *schema.ResourceData, meta interface{}) error {
 		log.Printf("Error deleting readResp: %s", deleteResp.Result[0].Message)
 		return errors.New("Error deleting vdisk: " + deleteResp.Result[0].Message)
 	}
+
+	d.SetId("")
+
 	return nil
 }

@@ -75,8 +75,7 @@ func resourceLunCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	q.Set("request", fmt.Sprintf("{type:AddLun, category:VirtualDiskManagement, params:{virtualDisks:['%s'], targets:['%s'], readonly:false}, sessionId:'%s'}", d.Get("vdisk").(string), d.Get("controller").(string),
-		sessionID))
+	q.Set("request", fmt.Sprintf("{type:AddLun, category:VirtualDiskManagement, params:{virtualDisks:['%s'], targets:['%s'], readonly:false}, sessionId:'%s'}", d.Get("vdisk").(string), d.Get("controller").(string), sessionID))
 	u.RawQuery = q.Encode()
 	log.Printf("URL: %v", u.String())
 
@@ -122,7 +121,6 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	idSplit := strings.Split(d.Id(), "$")
-	goo := ""
 
 	if len(idSplit) != 3 {
 		// return errors.New("Invalid ID: " + d.Id())
@@ -185,8 +183,9 @@ func resourceLunDelete(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	q.Set("request", fmt.Sprintf("{type:UnmapLun, category:VirtualDiskManagement, params:{virtualDisk:'%s', target:'%s'}, sessionId: '%s'}", d.Get("vdisk"), d.Get("controller"),
-		sessionID))
+	idSplit := strings.Split(d.Id(), "$")
+
+	q.Set("request", fmt.Sprintf("{type:UnmapLun, category:VirtualDiskManagement, params:{virtualDisk:'%s', target:'%s'}, sessionId: '%s'}", idSplit[1], idSplit[2], sessionID))
 	u.RawQuery = q.Encode()
 	log.Printf("URL: %v", u.String())
 
@@ -210,6 +209,8 @@ func resourceLunDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	log.Printf("body: %s", body)
+
+	d.SetId("")
 
 	return nil
 }
