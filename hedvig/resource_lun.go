@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-type LunResponse struct {
+type readLunResponse struct {
 	Result struct {
 		TargetLocations []string `json:"targetLocations"`
 	} `json:"result"`
@@ -121,14 +121,16 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	IdSplit := strings.Split(d.Id(), "$")
+	idSplit := strings.Split(d.Id(), "$")
+	goo := ""
 
-	if len(IdSplit) != 3 {
-		return errors.New("Incorrect number of fields in ID")
+	if len(idSplit) != 3 {
+		// return errors.New("Invalid ID: " + d.Id())
+		return fmt.Errorf("Invalid ID: %s", d.Id())
 	}
 
 	q := url.Values{}
-	q.Set("request", fmt.Sprintf("{type:VirtualDiskDetails,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", IdSplit[1], sessionID))
+	q.Set("request", fmt.Sprintf("{type:VirtualDiskDetails,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", idSplit[1], sessionID))
 
 	u.RawQuery = q.Encode()
 
@@ -147,18 +149,18 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	lun := LunResponse{}
-	err = json.Unmarshal(body, &lun)
+	lunResp := readLunResponse{}
+	err = json.Unmarshal(body, &lunResp)
 
 	if err != nil {
 		return err
 	}
 
-	if len(lun.Result.TargetLocations) < 1 {
+	if len(lunResp.Result.TargetLocations) < 1 {
 		return errors.New("Not enough results found to define resource")
 	}
 
-	controllerparts := strings.Split(lun.Result.TargetLocations[0], ":")[0]
+	controllerparts := strings.Split(lunResp.Result.TargetLocations[0], ":")[0]
 
 	if len(controllerparts) < 1 {
 		return errors.New("Insufficient data in lun.Result")
@@ -167,41 +169,6 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("controller", controllerparts)
 
 	return nil
-}
-
-func resourceLunUpdate(d *schema.ResourceData, meta interface{}) error {
-	if d.HasChange("vdisk") || d.HasChange("controller") {
-		dOldVDisk, _ := d.GetChange("vdisk")
-		dOldController, _ := d.GetChange("controller")
-
-		u := url.URL{}
-		u.Host = meta.(*HedvigClient).Node
-		u.Path = "/rest/"
-		u.Scheme = "http"
-
-		q := url.Values{}
-
-		sessionID, err := GetSessionId(d, meta.(*HedvigClient))
-
-		if err != nil {
-			return err
-		}
-
-		q.Set("request", fmt.Sprintf("{type:UnmapLun, category:VirtualDiskManagement, params:{virtualDisk:'%s', target:'%s'}, sessionId: '%s'}", dOldVDisk.(string), dOldController.(string), sessionID))
-
-		u.RawQuery = q.Encode()
-		log.Printf("URL: %v", u.String())
-
-		_, err = http.Get(u.String())
-
-		if err != nil {
-			return err
-		}
-
-		resourceLunCreate(d, meta)
-	}
-
-	return resourceLunRead(d, meta)
 }
 
 func resourceLunDelete(d *schema.ResourceData, meta interface{}) error {
