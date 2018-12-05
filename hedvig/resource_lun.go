@@ -123,7 +123,6 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 	idSplit := strings.Split(d.Id(), "$")
 
 	if len(idSplit) != 3 {
-		// return errors.New("Invalid ID: " + d.Id())
 		return fmt.Errorf("Invalid ID: %s", d.Id())
 	}
 
