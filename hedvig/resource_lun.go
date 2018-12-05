@@ -237,6 +237,10 @@ func resourceLunDelete(d *schema.ResourceData, meta interface{}) error {
 
 	err = json.Unmarshal(body, &deleteLunResp)
 
+	if err != nil {
+		return err
+	}
+
 	log.Printf("body: %s", body)
 
 	return nil
