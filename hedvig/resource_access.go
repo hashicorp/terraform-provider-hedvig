@@ -8,11 +8,12 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-type AccessResponse struct {
+type readAccessResponse struct {
 	RequestID string `json:"requestId"`
 	Result    []struct {
 		Host      string `json:"host"`
@@ -103,17 +104,9 @@ func resourceAccessCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	createStruct := createAccessResponse{}
+	createResp := createAccessResponse{}
 
-	err = json.Unmarshal(body, &createStruct)
-
-	if err != nil {
-		return err
-	}
-
-	if createStruct.Status != "ok" {
-		return errors.New(createStruct.Status)
-	}
+	err = json.Unmarshal(body, &createResp)
 
 	log.Printf("body: %s", body)
 
@@ -134,8 +127,14 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
+	idSplit := strings.Split(d.Id(), "$")
+
+	if len(idSplit) != 4 {
+		return errors.New("Invalid ID: " + d.Id())
+	}
+
 	q := url.Values{}
-	q.Set("request", fmt.Sprintf("{type:GetACLInformation,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", d.Get("vdisk").(string), sessionID))
+	q.Set("request", fmt.Sprintf("{type:GetACLInformation,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", idSplit[1], sessionID))
 
 	u.RawQuery = q.Encode()
 
@@ -152,7 +151,7 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
 		log.Fatal(err)
 	}
 
-	access := AccessResponse{}
+	access := readAccessResponse{}
 	err = json.Unmarshal(body, &access)
 
 	if err != nil {
@@ -182,8 +181,13 @@ func resourceAccessDelete(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	q.Set("request", fmt.Sprintf("{type:RemoveACLAccess, category:VirtualDiskManagement, params:{virtualDisk:'%s', host:'%s', address:['%s']}, sessionId: '%s'}", d.Get("vdisk").(string), d.Get("host").(string), d.Get("address").(string),
-		sessionID))
+	idSplit := strings.Split(d.Id(), "$")
+
+	if len(idSplit) != 4 {
+		return errors.New("Invalid ID: " + d.Id())
+	}
+
+	q.Set("request", fmt.Sprintf("{type:RemoveACLAccess, category:VirtualDiskManagement, params:{virtualDisk:'%s', host:'%s', address:['%s']}, sessionId: '%s'}", idSplit[1], idSplit[2], idSplit[3], sessionID))
 	u.RawQuery = q.Encode()
 	log.Printf("URL: %v", u.String())
 
@@ -198,13 +202,15 @@ func resourceAccessDelete(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	deletion := deleteAccessResponse{}
+	deleteResp := deleteAccessResponse{}
 
-	err = json.Unmarshal(body, &deletion)
+	err = json.Unmarshal(body, &deleteResp)
 
 	if err != nil {
 		return err
 	}
+	// TODO: Verify
+	d.SetId("")
 
 	log.Printf("body: %s", body)
 
