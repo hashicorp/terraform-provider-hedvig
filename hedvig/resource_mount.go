@@ -5,10 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -17,11 +15,11 @@ import (
 type createMountResponse struct {
 	Result struct {
 		ExportInfo []struct {
-			Target string `json:"target"`
-			Status string `json:"status"`
+			Target  string `json:"target"`
+			Message string `json:"message"`
+			Status  string `json:"status"`
 		} `json:"exportInfo"`
 	} `json:"result"`
-	Message   string `json:"message"`
 	RequestID string `json:"requestId"`
 	Type      string `json:"type"`
 	Status    string `json:"status"`
@@ -67,28 +65,23 @@ func resourceMount() *schema.Resource {
 	}
 }
 
-// TODO: Need to test against multiple controllers
 func resourceMountCreate(d *schema.ResourceData, meta interface{}) error {
 	u := url.URL{}
 	u.Host = meta.(*HedvigClient).Node
 	u.Path = "/rest/"
 	u.Scheme = "http"
 
-	q := url.Values{}
-
 	sessionID, err := GetSessionId(d, meta.(*HedvigClient))
-
 	if err != nil {
 		return err
 	}
 
+	q := url.Values{}
 	q.Set("request", fmt.Sprintf("{type:Mount, category:VirtualDiskManagement, params:{virtualDisk:'%s', targets:['%s']}, sessionId:'%s'}", d.Get("vdisk"), d.Get("controller"), sessionID))
 
 	u.RawQuery = q.Encode()
-	log.Printf("URL: %v", u.String())
 
 	resp, err := http.Get(u.String())
-
 	if err != nil {
 		return err
 	}
@@ -98,8 +91,6 @@ func resourceMountCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	log.Printf("body: %s", body)
-
 	createResp := createMountResponse{}
 	err = json.Unmarshal(body, &createResp)
 	if err != nil {
@@ -107,12 +98,17 @@ func resourceMountCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if createResp.Status != "ok" {
-		return errors.New("Error creating export: " + createResp.Message)
+		return errors.New("Unknown error creating export")
+	}
+
+	if len(createResp.Result.ExportInfo) != 1 {
+		return errors.New("Error - unexpected response from server")
 	}
 
 	if createResp.Result.ExportInfo[0].Status != "ok" {
-		return errors.New("Error creating export")
+		return fmt.Errorf("Error creating export: %s", createResp.Result.ExportInfo[0].Message)
 	}
+
 	d.SetId("mount$" + d.Get("vdisk").(string) + "$" + d.Get("controller").(string))
 
 	return resourceMountRead(d, meta)
@@ -138,24 +134,23 @@ func resourceMountRead(d *schema.ResourceData, meta interface{}) error {
 	q.Set("request", fmt.Sprintf("{type:ListExportedTargets,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", idSplit[1], sessionID))
 
 	u.RawQuery = q.Encode()
-
 	resp, err := http.Get(u.String())
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	if resp.StatusCode != 200 {
-		d.SetId("")
-		s := strconv.Itoa(resp.StatusCode)
-		log.Print("Received " + s + ", removing resource from state")
-		return nil
-	}
+	// if resp.StatusCode != 200 {
+	// 	d.SetId("")
+	// 	s := strconv.Itoa(resp.StatusCode)
+	// 	log.Print("Received " + s + ", removing resource from state")
+	// 	return nil
+	// }
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
-	log.Printf("body: %s", body)
+
 	readResp := readMountResponse{}
 	err = json.Unmarshal(body, &readResp)
 	if err != nil {
@@ -163,17 +158,21 @@ func resourceMountRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if readResp.Status != "ok" {
-		return errors.New("Error: " + readResp.Message)
+		return fmt.Errorf("Error: %s", readResp.Message)
 	}
 
-	// TODO: verify is necessary - should be caught by readResp.Status and readResp.Message
 	if len(readResp.Result) < 1 {
-		return errors.New("Resource not found: " + idSplit[1])
+		return errors.New("Error - unexpected response from server")
 	}
 
-	d.Set("controller", readResp.Result[0])
-
-	return nil
+	for _, rec := range readResp.Result {
+		if rec == idSplit[2] {
+			d.Set("controller", rec)
+			//TODO: Set everything
+			return nil
+		}
+	}
+	return errors.New("Resource not found")
 }
 
 func resourceMountDelete(d *schema.ResourceData, meta interface{}) error {
@@ -181,8 +180,6 @@ func resourceMountDelete(d *schema.ResourceData, meta interface{}) error {
 	u.Host = meta.(*HedvigClient).Node
 	u.Path = "/rest/"
 	u.Scheme = "http"
-
-	q := url.Values{}
 
 	sessionID, err := GetSessionId(d, meta.(*HedvigClient))
 	if err != nil {
@@ -194,13 +191,11 @@ func resourceMountDelete(d *schema.ResourceData, meta interface{}) error {
 		return errors.New("Invalid ID: " + d.Id())
 	}
 
+	q := url.Values{}
 	q.Set("request", fmt.Sprintf("{type:Unmount, category:VirtualDiskManagement, params:{virtualDisk:'%s', targets:['%s']}, sessionId: '%s'}", idSplit[1], idSplit[2], sessionID))
 
 	u.RawQuery = q.Encode()
-	log.Printf("URL: %v", u.String())
-
 	resp, err := http.Get(u.String())
-
 	if err != nil {
 		return err
 	}
@@ -209,13 +204,13 @@ func resourceMountDelete(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("body: %s", body)
 
 	deleteResp := deleteMountResponse{}
 	err = json.Unmarshal(body, &deleteResp)
 	if err != nil {
 		return err
 	}
+
 	if deleteResp.Status != "ok" {
 		return errors.New("Error deleting mount: " + deleteResp.Message)
 	}

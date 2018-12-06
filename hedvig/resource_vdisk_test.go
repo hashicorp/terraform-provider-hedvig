@@ -17,7 +17,10 @@ func TestAccHedvigVdisk(t *testing.T) {
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccHedvigVdiskConfig,
-				Check:  resource.ComposeTestCheckFunc(testAccCheckHedvigVdiskExists("hedvig_vdisk.test-vdisk1"), testAccCheckHedvigVdiskExists("hedvig_vdisk.test-vdisk2")),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckHedvigVdiskExists("hedvig_vdisk.test-vdisk1"),
+					testAccCheckHedvigVdiskExists("hedvig_vdisk.test-vdisk2"),
+				),
 			},
 		},
 	})

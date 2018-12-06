@@ -83,21 +83,18 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 	u.Path = "/rest/"
 	u.Scheme = "http"
 
-	q := url.Values{}
-
 	sessionID, err := GetSessionId(d, meta.(*HedvigClient))
-
 	if err != nil {
 		return err
 	}
 
+	q := url.Values{}
 	q.Set("request", fmt.Sprintf("{type:AddVirtualDisk, category:VirtualDiskManagement, params:{name:'%s', size:{unit:'GB', value:%d}, diskType:%s, scsi3pr:false}, sessionId:'%s'}", d.Get("name").(string), d.Get("size").(int), d.Get("type").(string), sessionID))
 
 	u.RawQuery = q.Encode()
 	log.Printf("URL: %v", u.String())
 
 	resp, err := http.Get(u.String())
-
 	if err != nil {
 		return err
 	}
@@ -107,30 +104,28 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	log.Printf("body: %s", body)
-
 	createResp := createDiskResposne{}
 	err = json.Unmarshal(body, &createResp)
 	if err != nil {
 		return err
 	}
 
-	// TODO: decide which method for returning error
+	//TODO: check for better way of returning results
+	if len(createResp.Result) < 1 {
+		return errors.New("Unknown error creating Vdisk")
+	}
+
 	if createResp.Result[0].Status != "ok" {
-		// d.SetId("")
-		// log.Printf("Error creating vdisk: %s", createResp.Result[0].Message)
-		// return nil
-		return errors.New("Error creating vdisk '" + d.Get("name").(string) + "': " + createResp.Result[0].Message)
-
+		return fmt.Errorf("Error creating vdisk %q: %s", d.Get("name").(string), createResp.Result[0].Message)
 	}
 
-	if resp.StatusCode != 200 {
-		d.SetId("")
-		// strresp := strconv.Itoa(resp.StatusCode)
-		// log.Print("Received " + strresp + " error, removing resource from state.")
-		log.Printf("Received %q error, removing resrouce from state.", resp.StatusCode)
-		return nil
-	}
+	// if resp.StatusCode != 200 {
+	// 	d.SetId("")
+	// 	// strresp := strconv.Itoa(resp.StatusCode)
+	// 	// log.Print("Received " + strresp + " error, removing resource from state.")
+	// 	log.Printf("Received %q error, removing resrouce from state.", resp.StatusCode)
+	// 	return nil
+	// }
 
 	d.SetId("vdisk$" + d.Get("name").(string) + "$" + d.Get("type").(string))
 
@@ -144,7 +139,6 @@ func resourceVdiskRead(d *schema.ResourceData, meta interface{}) error {
 	u.Scheme = "http"
 
 	sessionID, err := GetSessionId(d, meta.(*HedvigClient))
-
 	if err != nil {
 		return err
 	}
@@ -159,12 +153,11 @@ func resourceVdiskRead(d *schema.ResourceData, meta interface{}) error {
 	q.Set("request", fmt.Sprintf("{type:VirtualDiskDetails,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", idSplit[1], sessionID))
 
 	u.RawQuery = q.Encode()
-	log.Printf("URL: %v", u.String())
-
 	resp, err := http.Get(u.String())
 	if err != nil {
 		return err
 	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
@@ -172,14 +165,9 @@ func resourceVdiskRead(d *schema.ResourceData, meta interface{}) error {
 
 	readResp := readDiskResponse{}
 	err = json.Unmarshal(body, &readResp)
-
 	if err != nil {
-		erstr := fmt.Sprintf("Error unmarshalling: %s :: %s", err, string(body))
-		return errors.New(erstr)
+		return err
 	}
-
-	// TODO: verify status == ok
-	// TODO: verify at least one response...
 
 	if readResp.Result.DiskType == "NFS_MASTER_DISK" {
 		d.Set("type", "NFS")
@@ -192,6 +180,7 @@ func resourceVdiskRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
+// TODO: Verify and add tests
 func resourceVdiskUpdate(d *schema.ResourceData, meta interface{}) error {
 	u := url.URL{}
 	u.Host = meta.(*HedvigClient).Node
@@ -240,8 +229,6 @@ func resourceVdiskDelete(d *schema.ResourceData, meta interface{}) error {
 	u.Path = "/rest/"
 	u.Scheme = "http"
 
-	q := url.Values{}
-
 	sessionID, err := GetSessionId(d, meta.(*HedvigClient))
 	if err != nil {
 		return err
@@ -253,11 +240,10 @@ func resourceVdiskDelete(d *schema.ResourceData, meta interface{}) error {
 		return errors.New("Invalid ID")
 	}
 
+	q := url.Values{}
 	q.Set("request", fmt.Sprintf("{type:DeleteVDisk, category:VirtualDiskManagement, params:{virtualDisks:['%s']}, sessionId:'%s'}}", idSplit[1], sessionID))
 
 	u.RawQuery = q.Encode()
-	log.Printf("URL: %v", u.String())
-
 	resp, err := http.Get(u.String())
 	if err != nil {
 		return err
@@ -269,12 +255,16 @@ func resourceVdiskDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	deleteResp := diskDeleteResponse{}
-	json.Unmarshal(body, &deleteResp)
-	log.Printf("body: %s", body)
+	err = json.Unmarshal(body, &deleteResp)
+	if err != nil {
+		return err
+	}
 
-	if resp.StatusCode != 200 || deleteResp.Result[0].Status != "ok" {
-		log.Printf("Error deleting readResp: %s", deleteResp.Result[0].Message)
-		return errors.New("Error deleting vdisk: " + deleteResp.Result[0].Message)
+	// if resp.StatusCode != 200 {
+	// 	}
+
+	if deleteResp.Result[0].Status != "ok" {
+		return fmt.Errorf("Error deleting vdisk: %s", deleteResp.Result[0].Message)
 	}
 
 	d.SetId("")

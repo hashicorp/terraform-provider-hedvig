@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -17,6 +16,8 @@ type readLunResponse struct {
 	Result struct {
 		TargetLocations []string `json:"targetLocations"`
 	} `json:"result"`
+	Message string `json:"message"`
+	Status  string `json:"status"`
 }
 
 type createLunResponse struct {
@@ -35,9 +36,10 @@ type createLunResponse struct {
 }
 
 type deleteLunResponse struct {
-	RequestId string `json: "requestId"`
-	Status    string `json: "status"`
-	Type      string `json: "type"`
+	RequestId string `json:"requestId"`
+	Message   string `json:"message"`
+	Status    string `json:"status"`
+	Type      string `json:"type"`
 }
 
 func resourceLun() *schema.Resource {
@@ -77,7 +79,6 @@ func resourceLunCreate(d *schema.ResourceData, meta interface{}) error {
 
 	q.Set("request", fmt.Sprintf("{type:AddLun, category:VirtualDiskManagement, params:{virtualDisks:['%s'], targets:['%s'], readonly:false}, sessionId:'%s'}", d.Get("vdisk").(string), d.Get("controller").(string), sessionID))
 	u.RawQuery = q.Encode()
-	log.Printf("URL: %v", u.String())
 
 	resp, err := http.Get(u.String())
 
@@ -92,7 +93,6 @@ func resourceLunCreate(d *schema.ResourceData, meta interface{}) error {
 
 	createResp := createLunResponse{}
 	err = json.Unmarshal(body, &createResp)
-
 	if err != nil {
 		return err
 	}
@@ -100,8 +100,6 @@ func resourceLunCreate(d *schema.ResourceData, meta interface{}) error {
 	if createResp.Result[0].Targets[0].Status != "ok" {
 		return errors.New("Error creating export: " + createResp.Result[0].Targets[0].Message)
 	}
-
-	log.Printf("body: %s", body)
 
 	d.SetId("lun$" + d.Get("vdisk").(string) + "$" + d.Get("controller").(string))
 
@@ -121,7 +119,6 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	idSplit := strings.Split(d.Id(), "$")
-
 	if len(idSplit) != 3 {
 		return fmt.Errorf("Invalid ID: %s", d.Id())
 	}
@@ -132,40 +129,44 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 	u.RawQuery = q.Encode()
 
 	resp, err := http.Get(u.String())
-
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode != 200 {
-		d.SetId("")
-		log.Print("Lun resource not found in virtual disk, clearing from state")
-		return nil
-	}
+
+	// TODO: Verify
+	// if resp.StatusCode != 200 {
+	// 	d.SetId("")
+	// 	log.Print("Lun resource not found in virtual disk, clearing from state")
+	// 	return nil
+	// }
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 
-	lunResp := readLunResponse{}
-	err = json.Unmarshal(body, &lunResp)
-
+	readResp := readLunResponse{}
+	err = json.Unmarshal(body, &readResp)
 	if err != nil {
 		return err
 	}
 
-	if len(lunResp.Result.TargetLocations) < 1 {
+	if readResp.Status != "ok" {
+		return fmt.Errorf("Error reading lun details: %s", readResp.Message)
+	}
+
+	if len(readResp.Result.TargetLocations) < 1 {
 		return errors.New("Not enough results found to define resource")
 	}
 
-	controllerparts := strings.Split(lunResp.Result.TargetLocations[0], ":")[0]
-
-	if len(controllerparts) < 1 {
-		return errors.New("Insufficient data in lun.Result")
+	for _, target := range readResp.Result.TargetLocations {
+		if strings.HasPrefix(target, idSplit[2]) {
+			d.Set("controller", idSplit[2]) // cheating
+			return nil
+		}
 	}
 
-	d.Set("controller", controllerparts)
-
-	return nil
+	return errors.New("Resource not found")
 }
 
 func resourceLunDelete(d *schema.ResourceData, meta interface{}) error {
@@ -177,19 +178,19 @@ func resourceLunDelete(d *schema.ResourceData, meta interface{}) error {
 	q := url.Values{}
 
 	sessionID, err := GetSessionId(d, meta.(*HedvigClient))
-
 	if err != nil {
 		return err
 	}
 
 	idSplit := strings.Split(d.Id(), "$")
+	if len(idSplit) != 3 {
+		return fmt.Errorf("Invalid ID: %s", d.Id())
+	}
 
 	q.Set("request", fmt.Sprintf("{type:UnmapLun, category:VirtualDiskManagement, params:{virtualDisk:'%s', target:'%s'}, sessionId: '%s'}", idSplit[1], idSplit[2], sessionID))
 	u.RawQuery = q.Encode()
-	log.Printf("URL: %v", u.String())
 
 	resp, err := http.Get(u.String())
-
 	if err != nil {
 		return err
 	}
@@ -199,17 +200,16 @@ func resourceLunDelete(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	deleteLunResp := deleteLunResponse{}
-
-	err = json.Unmarshal(body, &deleteLunResp)
-
+	deleteResp := deleteLunResponse{}
+	err = json.Unmarshal(body, &deleteResp)
 	if err != nil {
 		return err
 	}
 
-	log.Printf("body: %s", body)
+	if deleteResp.Status != "ok" {
+		return fmt.Errorf("Error deleting lun: %s", deleteResp.Message)
+	}
 
 	d.SetId("")
-
 	return nil
 }
