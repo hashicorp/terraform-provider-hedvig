@@ -18,7 +18,7 @@ type readAccessResponse struct {
 	Result    []struct {
 		Host      string `json:"host"`
 		Initiator []struct {
-			Ip   string `json:"ip"`
+			IP   string `json:"ip"`
 			Name string `json:"name"`
 		}
 	} `json:"result"`
@@ -27,8 +27,9 @@ type readAccessResponse struct {
 }
 
 type deleteAccessResponse struct {
-	RequestId string `json:"requestId"`
+	RequestID string `json:"requestId"`
 	Status    string `json:"status"`
+	Message   string `json:"message"`
 	Type      string `json:"type"`
 }
 
@@ -38,7 +39,7 @@ type createAccessResponse struct {
 		Status  string `json:"status"`
 		Message string `json:"message"`
 	} `json:"result"`
-	RequestId string `json:"requestId"`
+	RequestID string `json:"requestId"`
 	Status    string `json:"status"`
 	Type      string `json:"type"`
 }
@@ -90,10 +91,7 @@ func resourceAccessCreate(d *schema.ResourceData, meta interface{}) error {
 
 	q.Set("request", fmt.Sprintf("{type:PersistACLAccess, category:VirtualDiskManagement, params:{virtualDisks:['%s'], host:'%s', address:'%s', type:'%s'}, sessionId:'%s'}", d.Get("vdisk").(string), d.Get("host").(string), d.Get("address").(string), d.Get("type").(string), sessionID))
 	u.RawQuery = q.Encode()
-	log.Printf("URL: %v", u.String())
-
 	resp, err := http.Get(u.String())
-
 	if err != nil {
 		return err
 	}
@@ -104,11 +102,14 @@ func resourceAccessCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	createResp := createAccessResponse{}
-
 	err = json.Unmarshal(body, &createResp)
+	if err != nil {
+		return err
+	}
 
-	log.Printf("body: %s", body)
-
+	if createResp.Result[0].Status != "ok" {
+		return fmt.Errorf("Error creating access: %s", createResp.Result[0].Message)
+	}
 	d.SetId("access$" + d.Get("vdisk").(string) + "$" + d.Get("host").(string) + "$" + d.Get("address").(string))
 
 	return resourceAccessRead(d, meta)
@@ -127,7 +128,6 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	idSplit := strings.Split(d.Id(), "$")
-
 	if len(idSplit) != 4 {
 		return errors.New("Invalid ID: " + d.Id())
 	}
@@ -157,26 +157,19 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	found := false
-
-	for _, v := range readAccess.Result {
-		if v.Host == idSplit[2] {
-			for _, vv := range v.Initiator {
-				if vv.Ip == idSplit[3] {
-					d.Set("host", v.Host)
-					d.Set("address", vv.Ip)
-					found = true
-					break
+	for _, rec := range readAccess.Result {
+		if rec.Host == idSplit[2] {
+			for _, export := range rec.Initiator {
+				if export.IP == idSplit[3] {
+					d.Set("host", rec.Host)
+					d.Set("address", export.IP)
+					return nil
 				}
 			}
 		}
 	}
 
-	if found == true {
-		return nil
-	} else {
-		return errors.New("Could not find address associated with host")
-	}
+	return errors.New("Could not find address associated with host")
 }
 
 func resourceAccessDelete(d *schema.ResourceData, meta interface{}) error {
@@ -201,7 +194,6 @@ func resourceAccessDelete(d *schema.ResourceData, meta interface{}) error {
 
 	q.Set("request", fmt.Sprintf("{type:RemoveACLAccess, category:VirtualDiskManagement, params:{virtualDisk:'%s', host:'%s', address:['%s']}, sessionId: '%s'}", idSplit[1], idSplit[2], idSplit[3], sessionID))
 	u.RawQuery = q.Encode()
-	log.Printf("URL: %v", u.String())
 
 	resp, err := http.Get(u.String())
 
@@ -215,15 +207,15 @@ func resourceAccessDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	deleteResp := deleteAccessResponse{}
-
 	err = json.Unmarshal(body, &deleteResp)
-
 	if err != nil {
 		return err
 	}
-	d.SetId("")
 
-	log.Printf("body: %s", body)
+	if deleteResp.Status != "ok" {
+		return fmt.Errorf("Error removing access: %s", deleteResp.Message)
+	}
+	d.SetId("")
 
 	return nil
 }
