@@ -88,8 +88,7 @@ func resourceAccessCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	q.Set("request", fmt.Sprintf("{type:PersistACLAccess, category:VirtualDiskManagement, params:{virtualDisks:['%s'], host:'%s', address:'%s', type:'%s'}, sessionId:'%s'}", d.Get("vdisk").(string), d.Get("host").(string), d.Get("address").(string),
-		d.Get("type").(string), sessionID))
+	q.Set("request", fmt.Sprintf("{type:PersistACLAccess, category:VirtualDiskManagement, params:{virtualDisks:['%s'], host:'%s', address:'%s', type:'%s'}, sessionId:'%s'}", d.Get("vdisk").(string), d.Get("host").(string), d.Get("address").(string), d.Get("type").(string), sessionID))
 	u.RawQuery = q.Encode()
 	log.Printf("URL: %v", u.String())
 
@@ -151,20 +150,33 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
 		log.Fatal(err)
 	}
 
-	access := readAccessResponse{}
-	err = json.Unmarshal(body, &access)
+	readAccess := readAccessResponse{}
+	err = json.Unmarshal(body, &readAccess)
 
 	if err != nil {
 		return err
 	}
 
-	if len(access.Result) < 1 {
-		return errors.New("Not enough results to find host in")
+	found := false
+
+	for _, v := range readAccess.Result {
+		if v.Host == idSplit[2] {
+			for _, vv := range v.Initiator {
+				if vv.Ip == idSplit[3] {
+					d.Set("host", v.Host)
+					d.Set("address", vv.Ip)
+					found = true
+					break
+				}
+			}
+		}
 	}
 
-	d.Set("host", access.Result[0].Host)
-
-	return nil
+	if found == true {
+		return nil
+	} else {
+		return errors.New("Could not find address associated with host")
+	}
 }
 
 func resourceAccessDelete(d *schema.ResourceData, meta interface{}) error {
