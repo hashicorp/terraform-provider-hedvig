@@ -108,7 +108,7 @@ func resourceAccessCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if len(createResp.Result) < 1 {
-		errors.New("Insufficient results from search")
+		return errors.New("Insufficient results from search")
 	}
 
 	if createResp.Result[0].Status != "ok" {
