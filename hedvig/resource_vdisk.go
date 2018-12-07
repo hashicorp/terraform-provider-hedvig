@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform/helper/validation"
 )
 
-type createDiskResposne struct {
+type createDiskResponse struct {
 	Result []struct {
 		Name    string `json:"name"`
 		Message string `json:"message"`
@@ -104,7 +104,7 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	createResp := createDiskResposne{}
+	createResp := createDiskResponse{}
 	err = json.Unmarshal(body, &createResp)
 	if err != nil {
 		return err
@@ -168,6 +168,8 @@ func resourceVdiskRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	//TODO: check status == ok
 
 	if readResp.Result.DiskType == "NFS_MASTER_DISK" {
 		d.Set("type", "NFS")
