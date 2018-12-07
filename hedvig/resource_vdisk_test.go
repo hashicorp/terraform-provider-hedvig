@@ -20,6 +20,7 @@ func TestAccHedvigVdisk(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckHedvigVdiskExists("hedvig_vdisk.test-vdisk1"),
 					testAccCheckHedvigVdiskExists("hedvig_vdisk.test-vdisk2"),
+					testAccCheckHedvigVdiskSize("hedvig_vdisk.test-vdisk1"),
 				),
 			},
 		},

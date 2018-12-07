@@ -36,6 +36,16 @@ type readDiskResponse struct {
 	} `json:"result"`
 }
 
+type updateDiskResponse struct {
+	RequestID string `json:"requestId"`
+	Result    []struct {
+		Name   string `json:"name"`
+		Status string `json:"status"`
+	} `json:"result"`
+	Status string `json:"status"`
+	Type   string `json:"type"`
+}
+
 type diskDeleteResponse struct {
 	Result []struct {
 		Name    string `json:"name"`
@@ -203,10 +213,9 @@ func resourceVdiskUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if d.HasChange("size") {
-		q.Set("request", fmt.Sprintf("{type:ResizeDisks, category:VirtualDiskManagement, params:{virtualDisks:['%s'], size:{unit:'GB', value:%d}}, sessionId:'%s'}", idSplit[2], d.Get("size").(int),
-			sessionID))
+		q.Set("request", fmt.Sprintf("{type:VirtualDiskDetails,category:VirtualDiskManagement,params:{virtualDisk:'%s'},sessionId:'%s'}", idSplit[1], sessionID))
+
 		u.RawQuery = q.Encode()
-		log.Printf("URL: %v", u.String())
 
 		resp, err := http.Get(u.String())
 
@@ -217,6 +226,42 @@ func resourceVdiskUpdate(d *schema.ResourceData, meta interface{}) error {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return err
+		}
+
+		readResp := readDiskResponse{}
+		err = json.Unmarshal(body, &readResp)
+		if err != nil {
+			return err
+		}
+
+		if readResp.Result.Size.Value > d.Get("size").(int) {
+			return errors.New("Cannot downsize a virtual disk")
+		}
+
+		q.Set("request", fmt.Sprintf("{type:ResizeDisks, category:VirtualDiskManagement, params:{virtualDisks:['%s'], size:{unit:'GB', value:%d}}, sessionId:'%s'}", idSplit[2], d.Get("size").(int),
+			sessionID))
+		u.RawQuery = q.Encode()
+		log.Printf("URL: %v", u.String())
+
+		resp, err = http.Get(u.String())
+
+		if err != nil {
+			return err
+		}
+
+		body, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+
+		updateResp := updateDiskResponse{}
+		err = json.Unmarshal(body, &updateResp)
+		if err != nil {
+			return err
+		}
+
+		if updateResp.Status != "ok" {
+			return errors.New("Error in update response")
 		}
 
 		log.Printf("body: %s", body)
