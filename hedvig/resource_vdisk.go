@@ -46,7 +46,7 @@ type updateDiskResponse struct {
 	Type   string `json:"type"`
 }
 
-type diskDeleteResponse struct {
+type deleteDiskResponse struct {
 	Result []struct {
 		Name    string `json:"name"`
 		Message string `json:"message"`
@@ -129,14 +129,6 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error creating vdisk %q: %s", d.Get("name").(string), createResp.Result[0].Message)
 	}
 
-	// if resp.StatusCode != 200 {
-	// 	d.SetId("")
-	// 	// strresp := strconv.Itoa(resp.StatusCode)
-	// 	// log.Print("Received " + strresp + " error, removing resource from state.")
-	// 	log.Printf("Received %q error, removing resrouce from state.", resp.StatusCode)
-	// 	return nil
-	// }
-
 	d.SetId("vdisk$" + d.Get("name").(string) + "$" + d.Get("type").(string))
 
 	return resourceVdiskRead(d, meta)
@@ -156,7 +148,7 @@ func resourceVdiskRead(d *schema.ResourceData, meta interface{}) error {
 	idSplit := strings.Split(d.Id(), "$")
 	log.Printf("idSplit: %v", idSplit)
 	if len(idSplit) != 3 {
-		return errors.New("Invalid ID: " + d.Id())
+		return fmt.Errorf("Invalid ID: %s", d.Id())
 	}
 
 	q := url.Values{}
@@ -209,7 +201,7 @@ func resourceVdiskUpdate(d *schema.ResourceData, meta interface{}) error {
 	idSplit := strings.Split(d.Id(), "$")
 	log.Printf("idSplit: %v", idSplit)
 	if len(idSplit) != 3 {
-		return errors.New("Invalid ID")
+		return fmt.Errorf("Invalid ID : %s", d.Id())
 	}
 
 	if d.HasChange("size") {
@@ -261,7 +253,7 @@ func resourceVdiskUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		if updateResp.Status != "ok" {
-			return errors.New("Error in update response")
+			return fmt.Errorf("Error updating vdisk: %s", updateResp.Status)
 		}
 
 		log.Printf("body: %s", body)
@@ -284,7 +276,7 @@ func resourceVdiskDelete(d *schema.ResourceData, meta interface{}) error {
 	idSplit := strings.Split(d.Id(), "$")
 	log.Printf("idSplit: %v", idSplit)
 	if len(idSplit) != 3 {
-		return errors.New("Invalid ID")
+		return fmt.Errorf("Invalid ID: %s", d.Id())
 	}
 
 	q := url.Values{}
@@ -301,7 +293,7 @@ func resourceVdiskDelete(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	deleteResp := diskDeleteResponse{}
+	deleteResp := deleteDiskResponse{}
 	err = json.Unmarshal(body, &deleteResp)
 	if err != nil {
 		return err

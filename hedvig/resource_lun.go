@@ -98,7 +98,7 @@ func resourceLunCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if createResp.Result[0].Targets[0].Status != "ok" {
-		return errors.New("Error creating export: " + createResp.Result[0].Targets[0].Message)
+		return fmt.Errorf("Error creating export: %s", createResp.Result[0].Targets[0].Message)
 	}
 
 	d.SetId("lun$" + d.Get("vdisk").(string) + "$" + d.Get("controller").(string))

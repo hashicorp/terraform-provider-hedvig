@@ -133,7 +133,7 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
 
 	idSplit := strings.Split(d.Id(), "$")
 	if len(idSplit) != 4 {
-		return errors.New("Invalid ID: " + d.Id())
+		return fmt.Errorf("Invalid ID: %s", d.Id())
 	}
 
 	q := url.Values{}
@@ -193,7 +193,7 @@ func resourceAccessDelete(d *schema.ResourceData, meta interface{}) error {
 	idSplit := strings.Split(d.Id(), "$")
 
 	if len(idSplit) != 4 {
-		return errors.New("Invalid ID: " + d.Id())
+		return fmt.Errorf("Invalid ID: %s", d.Id())
 	}
 
 	q.Set("request", fmt.Sprintf("{type:RemoveACLAccess, category:VirtualDiskManagement, params:{virtualDisk:'%s', host:'%s', address:['%s']}, sessionId: '%s'}", idSplit[1], idSplit[2], idSplit[3], sessionID))
