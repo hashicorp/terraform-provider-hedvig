@@ -219,7 +219,5 @@ func resourceAccessDelete(d *schema.ResourceData, meta interface{}) error {
 	if deleteResp.Status != "ok" {
 		return fmt.Errorf("Error removing access: %s", deleteResp.Message)
 	}
-	d.SetId("")
-
 	return nil
 }
