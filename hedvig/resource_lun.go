@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -133,12 +134,11 @@ func resourceLunRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	// TODO: Verify
-	// if resp.StatusCode != 200 {
-	// 	d.SetId("")
-	// 	log.Print("Lun resource not found in virtual disk, clearing from state")
-	// 	return nil
-	// }
+	if resp.StatusCode == 404 {
+		d.SetId("")
+		log.Print("Lun resource not found in virtual disk, clearing from state")
+		return nil
+	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
