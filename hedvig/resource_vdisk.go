@@ -299,9 +299,6 @@ func resourceVdiskDelete(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	// if resp.StatusCode != 200 {
-	// 	}
-
 	if deleteResp.Result[0].Status != "ok" {
 		return fmt.Errorf("Error deleting vdisk: %s", deleteResp.Result[0].Message)
 	}
