@@ -12,8 +12,9 @@ import (
 
 func TestAccHedvigVdisk(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckHedvigVdiskDestroy("hedvig_vdisk.test-vdisk1"),
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccHedvigVdiskConfig,
@@ -62,6 +63,21 @@ func testAccCheckHedvigVdiskExists(n string) resource.TestCheckFunc {
 			return errors.New("No vdisk ID is set")
 		}
 
+		return nil
+	}
+}
+
+func testAccCheckHedvigVdiskDestroy(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "hedvig_vdisk" {
+				continue
+			}
+			name := rs.Primary.ID
+			if name == n {
+				return fmt.Errorf("Found resource: %s", name)
+			}
+		}
 		return nil
 	}
 }

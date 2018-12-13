@@ -14,8 +14,9 @@ import (
 
 func TestAccHedvigAccess(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckHedvigAccessDestroy("hedvig_access.test-access1"),
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccHedvigAccessConfig,
@@ -99,15 +100,17 @@ func testAccCheckHedvigAccessExists(n string) resource.TestCheckFunc {
 	}
 }
 
-//func testAccCheckHedvigAccessCheckDestroyed(n string) resource.TestCheckFunc {
-//	return func(s *terraform.State) error {
-//		rs, ok := s.RootModule().Resources[n]
-//		if !ok {
-//			return fmt.Errorf("Not found: %s", n)
-//		}
-//		if rs.Primary.ID == "" {
-//			return nil
-//		}
-//		return errors.New("Access Resource not Destroyed")
-//	}
-//}
+func testAccCheckHedvigAccessDestroy(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "hedvig_access" {
+				continue
+			}
+			name := rs.Primary.ID
+			if name == n {
+				return fmt.Errorf("Found resource: %s", name)
+			}
+		}
+		return nil
+	}
+}

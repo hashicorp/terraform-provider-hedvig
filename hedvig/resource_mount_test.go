@@ -12,8 +12,9 @@ import (
 
 func TestAccHedvigMount(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckHedvigMountDestroy("hedvig_mount.test-mount"),
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccHedvigMountConfig,
@@ -54,6 +55,21 @@ func testAccCheckHedvigMountExists(n string) resource.TestCheckFunc {
 			return errors.New("No lun ID is set")
 		}
 
+		return nil
+	}
+}
+
+func testAccCheckHedvigMountDestroy(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "hedvig_mount" {
+				continue
+			}
+			name := rs.Primary.ID
+			if name == n {
+				return fmt.Errorf("Found resource: %s", name)
+			}
+		}
 		return nil
 	}
 }
