@@ -88,9 +88,12 @@ func testAccCheckHedvigVdiskSize(n string) resource.TestCheckFunc {
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
 		}
+		if rs.Primary.Attributes["size"] == "9" {
+			return nil
+		}
 		if rs.Primary.Attributes["size"] == "" {
 			return errors.New("Size expected to not be nil")
 		}
-		return nil
+		return errors.New("Unknown problem with size of vdisk")
 	}
 }
