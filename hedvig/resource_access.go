@@ -145,7 +145,7 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode != 200 {
+	if resp.StatusCode == 404 {
 		d.SetId("")
 		return nil
 	}

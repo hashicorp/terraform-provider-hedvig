@@ -160,6 +160,11 @@ func resourceVdiskRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
+	if resp.StatusCode == 404 {
+		d.SetId("")
+		return nil
+	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err

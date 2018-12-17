@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -139,12 +141,12 @@ func resourceMountRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	// if resp.StatusCode != 200 {
-	// 	d.SetId("")
-	// 	s := strconv.Itoa(resp.StatusCode)
-	// 	log.Print("Received " + s + ", removing resource from state")
-	// 	return nil
-	// }
+	if resp.StatusCode == 404 {
+		d.SetId("")
+		s := strconv.Itoa(resp.StatusCode)
+		log.Print("Received " + s + ", removing resource from state")
+		return nil
+	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
