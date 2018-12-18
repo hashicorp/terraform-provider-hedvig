@@ -3,20 +3,18 @@ package hedvig
 import (
 	"errors"
 	"fmt"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
 	"os"
 	"testing"
-)
 
-func testHedvigLun() error {
-	return nil
-}
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/terraform"
+)
 
 func TestAccHedvigLun(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckHedvigLunDestroy("hedvig_lun.test-lun"),
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccHedvigLunConfig,
@@ -34,20 +32,18 @@ provider "hedvig" {
 }
 
 resource "hedvig_vdisk" "test-lun-vdisk" {
-  cluster = "%s"
   name = "%s"
   size = 9
   type = "BLOCK"
 }
 
 resource "hedvig_lun" "test-lun" {
-  cluster = "%s"
   vdisk = "${hedvig_vdisk.test-lun-vdisk.name}"
   controller = "%s"
 }
 `, os.Getenv("HV_TESTNODE"), os.Getenv("HV_TESTUSER"), os.Getenv("HV_TESTPASS"),
-	os.Getenv("HV_TESTCLUST"), genRandomVdiskName(),
-	os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTCONT"))
+	genRandomVdiskName(),
+	os.Getenv("HV_TESTCONT"))
 
 func testAccCheckHedvigLunExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -60,6 +56,21 @@ func testAccCheckHedvigLunExists(n string) resource.TestCheckFunc {
 			return errors.New("No lun ID is set")
 		}
 
+		return nil
+	}
+}
+
+func testAccCheckHedvigLunDestroy(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "hedvig_lun" {
+				continue
+			}
+			name := rs.Primary.ID
+			if name == n {
+				return fmt.Errorf("Found resource: %s", name)
+			}
+		}
 		return nil
 	}
 }

@@ -3,20 +3,18 @@ package hedvig
 import (
 	"errors"
 	"fmt"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
 	"os"
 	"testing"
-)
 
-func testHedvigMount() error {
-	return nil
-}
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/terraform"
+)
 
 func TestAccHedvigMount(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckHedvigMountDestroy("hedvig_mount.test-mount"),
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccHedvigMountConfig,
@@ -34,19 +32,17 @@ provider "hedvig" {
 }
 
 resource "hedvig_vdisk" "test-mount-vdisk" {
-  cluster = "%s"
   name = "%s"
   size = 11
   type = "NFS"
 }
 
 resource "hedvig_mount" "test-mount" {
-  cluster = "%s"
   vdisk = "${hedvig_vdisk.test-mount-vdisk.name}"
   controller = "%s"
 }
 `, os.Getenv("HV_TESTNODE"), os.Getenv("HV_TESTUSER"), os.Getenv("HV_TESTPASS"),
-	os.Getenv("HV_TESTCLUST"), genRandomVdiskName(), os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTCONT"))
+	genRandomVdiskName(), os.Getenv("HV_TESTCONT"))
 
 func testAccCheckHedvigMountExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -59,6 +55,21 @@ func testAccCheckHedvigMountExists(n string) resource.TestCheckFunc {
 			return errors.New("No lun ID is set")
 		}
 
+		return nil
+	}
+}
+
+func testAccCheckHedvigMountDestroy(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "hedvig_mount" {
+				continue
+			}
+			name := rs.Primary.ID
+			if name == n {
+				return fmt.Errorf("Found resource: %s", name)
+			}
+		}
 		return nil
 	}
 }

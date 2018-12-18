@@ -3,26 +3,24 @@ package hedvig
 import (
 	"errors"
 	"fmt"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
 	"math/rand"
 	"os"
 	"testing"
 	"time"
-)
 
-func testHedvigAccess() error {
-	return nil
-}
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/terraform"
+)
 
 func TestAccHedvigAccess(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckHedvigAccessDestroy("hedvig_access.test-access1"),
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccHedvigAccessConfig,
-				Check:  resource.ComposeTestCheckFunc(testAccCheckHedvigAccessExists("hedvig_access.test-access1"), testAccCheckHedvigAccessExists("hedvig_access.test-access2")),
+				Check:  resource.ComposeTestCheckFunc(testAccCheckHedvigAccessExists("hedvig_access.test-access1"), testAccCheckHedvigAccessExists("hedvig_access.test-access2")), //, testAccCheckHedvigAccessCheckDestroyed("hedvig_access.test-access2")),
 			},
 		},
 	})
@@ -36,33 +34,28 @@ provider "hedvig" {
 }
 
 resource "hedvig_vdisk" "test-access-vdisk1" {
-  cluster = "%s"
   name = "%s"
   size = 9
   type = "BLOCK"
 }
 
 resource "hedvig_vdisk" "test-access-vdisk2" {
-  cluster = "%s"
   name = "%s"
   size = 14
   type = "NFS"
 }
 
 resource "hedvig_lun" "test-access-lun" {
-  cluster = "%s"
   vdisk = "${hedvig_vdisk.test-access-vdisk1.name}"
   controller = "%s"
 }
 
 resource "hedvig_mount" "test-access-mount" {
-  cluster = "%s"
   vdisk = "${hedvig_vdisk.test-access-vdisk2.name}"
   controller = "%s"
 }
 
 resource "hedvig_access" "test-access1" {
-  cluster = "%s"
   vdisk = "${hedvig_vdisk.test-access-vdisk1.name}"
   host = "${hedvig_lun.test-access-lun.controller}"
   address = "%s"
@@ -70,19 +63,18 @@ resource "hedvig_access" "test-access1" {
 }
 
 resource "hedvig_access" "test-access2" {
-  cluster = "%s"
   vdisk = "${hedvig_vdisk.test-access-vdisk2.name}"
   host = "${hedvig_mount.test-access-mount.controller}"
   address = "%s"
   type = "host"
 }
 `, os.Getenv("HV_TESTNODE"), os.Getenv("HV_TESTUSER"), os.Getenv("HV_TESTPASS"),
-	os.Getenv("HV_TESTCLUST"), genRandomVdiskName(),
-	os.Getenv("HV_TESTCLUST"), genRandomVdiskName(),
-	os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTCONT"),
-	os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTCONT"),
-	os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTADDR"),
-	os.Getenv("HV_TESTCLUST"), os.Getenv("HV_TESTADDR2"))
+	genRandomVdiskName(),
+	genRandomVdiskName(),
+	os.Getenv("HV_TESTCONT"),
+	os.Getenv("HV_TESTCONT"),
+	os.Getenv("HV_TESTADDR"),
+	os.Getenv("HV_TESTADDR2"))
 
 func genRandomVdiskName() string {
 	rand.Seed(time.Now().UnixNano())
@@ -104,6 +96,21 @@ func testAccCheckHedvigAccessExists(n string) resource.TestCheckFunc {
 			return errors.New("No lun ID is set")
 		}
 
+		return nil
+	}
+}
+
+func testAccCheckHedvigAccessDestroy(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "hedvig_access" {
+				continue
+			}
+			name := rs.Primary.ID
+			if name == n {
+				return fmt.Errorf("Found resource: %s", name)
+			}
+		}
 		return nil
 	}
 }

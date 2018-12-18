@@ -15,13 +15,15 @@ package hedvig
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
+
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/terraform"
 )
 
 type LoginResponse struct {
@@ -48,7 +50,7 @@ type HedvigClient struct {
 }
 
 func Provider() terraform.ResourceProvider {
-	return &schema.Provider{ // Source https://github.com/hashicorp/terraform/blob/v0.6.6/helper/schema/provider.go#L20-L43
+	return &schema.Provider{
 		Schema:        providerSchema(),
 		ResourcesMap:  providerResources(),
 		ConfigureFunc: providerConfigure,
@@ -58,12 +60,14 @@ func Provider() terraform.ResourceProvider {
 func providerSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"username": &schema.Schema{
-			Type:     schema.TypeString,
-			Required: true,
+			Type:        schema.TypeString,
+			Required:    true,
+			DefaultFunc: schema.EnvDefaultFunc("HV_TESTUSER", ""),
 		},
 		"password": &schema.Schema{
-			Type:     schema.TypeString,
-			Required: true,
+			Type:        schema.TypeString,
+			Required:    true,
+			DefaultFunc: schema.EnvDefaultFunc("HV_TESTPASS", ""),
 		},
 		"node": &schema.Schema{
 			Type:     schema.TypeString,
@@ -91,7 +95,7 @@ func providerResources() map[string]*schema.Resource {
 	}
 }
 
-func GetSessionId(d *schema.ResourceData, p *HedvigClient) string, error {
+func GetSessionId(d *schema.ResourceData, p *HedvigClient) (string, error) {
 	u := url.URL{}
 	u.Host = p.Node
 	u.Path = "/rest/"
@@ -100,10 +104,10 @@ func GetSessionId(d *schema.ResourceData, p *HedvigClient) string, error {
 	q := url.Values{}
 	q.Set("request", fmt.Sprintf("{type:Login,category:UserManagement,params:{userName:'%s',password:'%s',cluster:''}}",
 		p.Username, p.Password))
-	log.Printf("URL: %+v\n", u.String())
 
 	u.RawQuery = q.Encode()
 
+	// TODO: remove
 	log.Printf("QUERY: %v\n", u.String())
 
 	resp, err := http.Get(u.String())
@@ -119,11 +123,14 @@ func GetSessionId(d *schema.ResourceData, p *HedvigClient) string, error {
 	err = json.Unmarshal(body, &login)
 
 	if err != nil {
-		return nil, log.Fatalf("Error unmarshalling: %s", err)
+		return "", err
 	}
-	log.Printf("login: %+v", login)
 
-	log.Printf("session: %s", login.Result.SessionID)
+	if login.Status != "ok" {
+		// TODO: raise log level to ERROR
+		log.Printf("GetSessionID failed")
+		return "", errors.New(login.Status)
+	}
 
 	return login.Result.SessionID, nil
 }
