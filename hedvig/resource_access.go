@@ -147,6 +147,7 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	if resp.StatusCode == 404 {
 		d.SetId("")
+		log.Print("Access resource not found for vdisk, clearing from state)
 		return nil
 	}
 	body, err := ioutil.ReadAll(resp.Body)
