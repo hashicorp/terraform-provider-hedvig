@@ -50,12 +50,12 @@ func resourceLun() *schema.Resource {
 		Delete: resourceLunDelete,
 
 		Schema: map[string]*schema.Schema{
-			"vdisk": &schema.Schema{
+			"vdisk": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"controller": &schema.Schema{
+			"controller": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,

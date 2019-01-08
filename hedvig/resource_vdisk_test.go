@@ -16,7 +16,7 @@ func TestAccHedvigVdisk(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckHedvigVdiskDestroy("hedvig_vdisk.test-vdisk1"),
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccHedvigVdiskConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckHedvigVdiskExists("hedvig_vdisk.test-vdisk1"),

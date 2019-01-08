@@ -51,22 +51,22 @@ func resourceAccess() *schema.Resource {
 		Delete: resourceAccessDelete,
 
 		Schema: map[string]*schema.Schema{
-			"vdisk": &schema.Schema{
+			"vdisk": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"host": &schema.Schema{
+			"host": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"address": &schema.Schema{
+			"address": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"type": &schema.Schema{
+			"type": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,

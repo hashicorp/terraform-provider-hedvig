@@ -16,7 +16,7 @@ func TestAccHedvigLun(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckHedvigLunDestroy("hedvig_lun.test-lun"),
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccHedvigLunConfig,
 				Check:  testAccCheckHedvigLunExists("hedvig_lun.test-lun"),
 			},
