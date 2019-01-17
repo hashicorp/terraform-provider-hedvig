@@ -22,8 +22,9 @@ type readAccessResponse struct {
 			Name string `json:"name"`
 		}
 	} `json:"result"`
-	Status string `json:"status"`
-	Type   string `json:"type"`
+	Status  string `json:"status"`
+	Message string `json:"message"`
+	Type    string `json:"type"`
 }
 
 type deleteAccessResponse struct {
@@ -146,9 +147,7 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	if resp.StatusCode == 404 {
-		d.SetId("")
-		log.Print("Access resource not found for vdisk, clearing from state")
-		return nil
+		return errors.New("Malformed query; aborting")
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -160,6 +159,12 @@ func resourceAccessRead(d *schema.ResourceData, meta interface{}) error {
 
 	if err != nil {
 		return err
+	}
+
+	if readAccess.Status == "warning" && strings.HasSuffix(readAccess.Message, "t be found") {
+		d.SetId("")
+		log.Print("Access resource not found for vdisk, clearing from state")
+		return nil
 	}
 
 	for _, rec := range readAccess.Result {
