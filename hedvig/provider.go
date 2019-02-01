@@ -59,17 +59,17 @@ func Provider() terraform.ResourceProvider {
 
 func providerSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"username": &schema.Schema{
+		"username": {
 			Type:        schema.TypeString,
 			Required:    true,
 			DefaultFunc: schema.EnvDefaultFunc("HV_TESTUSER", ""),
 		},
-		"password": &schema.Schema{
+		"password": {
 			Type:        schema.TypeString,
 			Required:    true,
 			DefaultFunc: schema.EnvDefaultFunc("HV_TESTPASS", ""),
 		},
-		"node": &schema.Schema{
+		"node": {
 			Type:     schema.TypeString,
 			Required: true,
 		},

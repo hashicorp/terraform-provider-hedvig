@@ -16,7 +16,7 @@ func TestAccHedvigMount(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckHedvigMountDestroy("hedvig_mount.test-mount"),
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccHedvigMountConfig,
 				Check:  testAccCheckHedvigMountExists("hedvig_mount.test-mount"),
 			},
