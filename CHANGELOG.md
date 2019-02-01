@@ -1,4 +1,9 @@
 ## 1.0.2 (Unreleased)
+
+FEATURES:
+
+`Updated handling of missing resources`
+
 ## 1.0.1 (December 20, 2018)
 
 ## 1.0.0 (April 3, 2018)
