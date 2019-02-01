@@ -2,7 +2,7 @@
 
 FEATURES:
 
-`Updated handling of missing resources`
+ * Updated handling of missing resources
 
 ## 1.0.1 (December 20, 2018)
 
