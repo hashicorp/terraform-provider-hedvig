@@ -1,4 +1,10 @@
-## 1.0.3 (Unreleased)
+## 1.0.4 (Unreleased)
+## 1.0.3 (March 15, 2019)
+
+FEATURES:
+
+ * Updated website
+
 ## 1.0.2 (February 02, 2019)
 
 FEATURES:
