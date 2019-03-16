@@ -16,7 +16,6 @@ Example creating an Access resource.
 
 ```
 resource "hedvig_access" "example-access" {
-  cluster = "example"
   vdisk = "${hedvig_vdisk.example-vdisk.name}"
   host = "${hedvig_lun.example-lun.controller}"
   address = "172.26.53.99"
@@ -27,8 +26,6 @@ resource "hedvig_access" "example-access" {
 ## Argument Reference
 
 The following arguments are supported:
-
-* `cluster` - (Required) The name of the cluster hosting the Access.
 
 * `vdisk` - (Required) The name of the Vdisk that this Access is associated with.
 

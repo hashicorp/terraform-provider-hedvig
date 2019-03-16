@@ -16,7 +16,6 @@ Example creating a Lun resource.
 
 ```
 resource "hedvig_lun" "example-lun" {
-  cluster = "example"
   vdisk = "${hedvig_vdisk.example-vdisk.name}"
   controller = "examplevip1.hedviginc.com"
 }
@@ -25,8 +24,6 @@ resource "hedvig_lun" "example-lun" {
 ## Argument Reference
 
 The following arguments are supported:
-
- * `cluster` - (Required) The name of the cluster hosting the LUN.
 
  * `vdisk` - (Required) The name of the vdisk the LUN is on.
 

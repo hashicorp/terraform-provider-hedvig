@@ -16,7 +16,6 @@ Example creating a Vdisk resource.
 
 ```
 resource "hedvig_vdisk" "example-vdisk" {
-  cluster = "example"
   name = "HedvigVdisk01"
   size = 20
   type = "NFS"
@@ -26,8 +25,6 @@ resource "hedvig_vdisk" "example-vdisk" {
 ## Argument Reference
 
 The following arguments are supported:
-
-* `cluster` - (Required) The name of the cluster hosting the Vdisk.
 
 * `name` - (Required) The name to be used by the Vdisk for identification.
 
