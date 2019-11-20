@@ -1,10 +1,11 @@
 package hedvig
 
 import (
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
 	"os"
 	"testing"
+
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/terraform"
 )
 
 var testAccProviders map[string]terraform.ResourceProvider
@@ -31,7 +32,7 @@ func testAccPreCheck(t *testing.T) {
 	if len(missingVars) > 0 {
 		t.Fatalf("The following env vars must be set for acceptance tests: %s", missingVars)
 	}
-	err := testAccProvider.Configure(terraform.NewResourceConfig(nil))
+	err := testAccProvider.Configure(terraform.NewResourceConfigRaw(nil))
 	if err != nil {
 		t.Fatal(err)
 	}
