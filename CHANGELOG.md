@@ -1,4 +1,7 @@
 ## 1.0.5 (Unreleased)
+
+ * Merge in switch to Go modules update
+
 ## 1.0.4 (May 23, 2019)
 
 FEATURES:
