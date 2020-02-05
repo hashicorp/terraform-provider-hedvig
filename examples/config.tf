@@ -6,6 +6,7 @@ provider "hedvig" {
 
 resource "hedvig_vdisk" "my-vdisk" {
   name = "HedvigVdiskNN"
+  residence = "HDD"
   size = 18
   type = "BLOCK"
 }
