@@ -23,6 +23,8 @@ type createDiskResponse struct {
 	RequestID string `json:"requestId"`
 	Type      string `json:"type"`
 	Status    string `json:"status"`
+        Residence string `json:"residence"`
+    Message   string `json:"message"`
 }
 
 type readDiskResponse struct {
@@ -76,6 +78,15 @@ func resourceVdisk() *schema.Resource {
 				Type:     schema.TypeInt,
 				Required: true,
 			},
+			"residence": {
+				Type:	  schema.TypeString,
+				Required: true,
+				ForceNew: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"Flash",
+					"HDD",
+				}, true),
+			},
 			"type": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -101,7 +112,7 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	q := url.Values{}
-	q.Set("request", fmt.Sprintf("{type:AddVirtualDisk, category:VirtualDiskManagement, params:{name:'%s', size:{unit:'GB', value:%d}, diskType:%s, scsi3pr:false}, sessionId:'%s'}", d.Get("name").(string), d.Get("size").(int), d.Get("type").(string), sessionID))
+	q.Set("request", fmt.Sprintf("{type:AddVirtualDisk, category:VirtualDiskManagement, params:{name:'%s', size:{unit:'GB', value:%d}, diskType:%s, residence:%s, scsi3pr:false}, sessionId:'%s'}", d.Get("name").(string), d.Get("size").(int), d.Get("type").(string), d.Get("residence"), sessionID)) //"FLASH",sessionID)) // d.Get("residence").(string), sessionID)) //, d.Get("residence").(string), sessionID))
 
 	u.RawQuery = q.Encode()
 	log.Printf("URL: %v", u.String())
@@ -124,7 +135,7 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 
 	//TODO: check for better way of returning results
 	if len(createResp.Result) < 1 {
-		return errors.New("Unknown error creating Vdisk")
+		return errors.New(createResp.Message) //"Unknown error creating Vdisk")
 	}
 
 	if createResp.Result[0].Status != "ok" {
