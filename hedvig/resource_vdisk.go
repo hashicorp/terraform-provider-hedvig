@@ -23,8 +23,8 @@ type createDiskResponse struct {
 	RequestID string `json:"requestId"`
 	Type      string `json:"type"`
 	Status    string `json:"status"`
-        Residence string `json:"residence"`
-    Message   string `json:"message"`
+	Residence string `json:"residence"`
+	Message   string `json:"message"`
 }
 
 type readDiskResponse struct {
