@@ -113,8 +113,7 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	q := url.Values{}
-	q.Set("request", fmt.Sprintf("{type:AddVirtualDisk, category:VirtualDiskManagement, params:{name:'%s', size:{unit:'GB', value:%d}, diskType:%s, residence:%s, scsi3pr:false}, sessionId:'%s'}", d.Get("name").(string), d.Get("size").(int), d.Get("type").(string), d.Get("residence"), sessionID)) //"FLASH",sessionID)) // d.Get("residence").(string), sessionID)) //, d.Get("residence").(string), sessionID))
-
+	q.Set("request", fmt.Sprintf("{type:AddVirtualDisk, category:VirtualDiskManagement, params:{name:'%s', size:{unit:'GB', value:%d}, diskType:%s, residence:%s, scsi3pr:false}, sessionId:'%s'}", d.Get("name").(string), d.Get("size").(int), d.Get("type").(string), d.Get("residence"), sessionID))
 	u.RawQuery = q.Encode()
 	log.Printf("URL: %v", u.String())
 
@@ -136,7 +135,7 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 
 	//TODO: check for better way of returning results
 	if len(createResp.Result) < 1 {
-		return errors.New(createResp.Message) //"Unknown error creating Vdisk")
+		return errors.New(createResp.Message)
 	}
 
 	if createResp.Result[0].Status != "ok" {
