@@ -25,6 +25,7 @@ type createDiskResponse struct {
 	Status    string `json:"status"`
 	Residence string `json:"residence"`
 	Message   string `json:"message"`
+	ReplicationFactor string `json:"replicationFactor"`
 }
 
 type readDiskResponse struct {
@@ -97,6 +98,20 @@ func resourceVdisk() *schema.Resource {
 					"BLOCK",
 				}, true),
 			},
+			"replicationfactor": {
+				Type: 	 schema.TypeString,
+				Optional: true,
+				Default: "3",
+				ForceNew: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"1",
+					"2",
+					"3",
+					"4",
+					"5",
+					"6",
+				}, true),
+			},
 		},
 	}
 }
@@ -113,7 +128,7 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	q := url.Values{}
-	q.Set("request", fmt.Sprintf("{type:AddVirtualDisk, category:VirtualDiskManagement, params:{name:'%s', size:{unit:'GB', value:%d}, diskType:%s, residence:%s, scsi3pr:false}, sessionId:'%s'}", d.Get("name").(string), d.Get("size").(int), d.Get("type").(string), d.Get("residence"), sessionID))
+	q.Set("request", fmt.Sprintf("{type:AddVirtualDisk, category:VirtualDiskManagement, params:{name:'%s', size:{unit:'GB', value:%d}, diskType:%s, residence:%s, replicationFactor:%s, scsi3pr:false}, sessionId:'%s'}", d.Get("name").(string), d.Get("size").(int), d.Get("type").(string), d.Get("residence"), d.Get("replicationfactor").(string), sessionID))
 	u.RawQuery = q.Encode()
 	log.Printf("URL: %v", u.String())
 
