@@ -1,63 +1,39 @@
 provider "hedvig" {
   username = "HedvigAdmin"
   password = "hedvig"
-  node = "tfhashicorp1.external.hedviginc.com"
+  node = "lumos4.hedviginc.com"
 }
 
-resource "hedvig_vdisk" "my-vdisk" {
-  name = "HedvigVdiskNN"
+resource "hedvig_vdisk" "my-vdisk-lumosBlock55" {
+  name = "HedvigVdiskLumosBlock55"
+#  clusteredfilesystem = "true"
+  deduplication = "true"
+  scsi3pr = "false"
+  compressed = "true"
+  encryption = "false"
+#  description = "Stuff about this Vdisk."
   residence = "HDD"
-  size = 18
-  type = "BLOCK"
+  type = "Block"
+  size = 7
+  blocksize = "4096"
+  replicationpolicy = "Agnostic"
+  cacheenabled = "true"
 }
 
-resource "hedvig_lun" "my-lun3" {
-  vdisk = "${hedvig_vdisk.my-vdisk.name}"
-  controller = "tfhashicorpvip1.external.hedviginc.com"
-}
-
-resource "hedvig_vdisk" "my-vdisk2" {
-  name = "HedvigVdiskOO"
-  size = 20
-  type = "NFS"
-}
-
-#resource "hedvig_vdisk" "my-vdisk3" {
-#  name = "HedvigVdiskC"
-#  size = 22
-#  type = "NFS"
-#}
-
-resource "hedvig_mount" "my-mount" {
-  vdisk = "${hedvig_vdisk.my-vdisk2.name}"
-  controller = "tfhashicorpvip1.external.hedviginc.com"
-}
-
-#resource "hedvig_access" "my-access" {
-#  vdisk = "${hedvig_vdisk.my-vdisk.name}"
-#  host = "${hedvig_lun.my-lun3.controller}"
-#  address = "172.22.22.21"
+#resource "hedvig_access" "my-access-fudgeFlash23" {
+#  vdisk = "${hedvig_vdisk.my-vdisk-fudgeFlash23.name}"
+#  host = "${hedvig_mount.my-mount-fudgeFlash23.controller}"
+#  address = "172.22.22.8"
 #  type = "host"
 #}
 
-#resource "hedvig_access" "my-access2" {
-#  vdisk = "${hedvig_vdisk.my-vdisk.name}"
-#  host = "${hedvig_lun.my-lun3.controller}"
-#  address = "172.22.22.25"
-#  type = "host"
+#resource "hedvig_mount" "my-mount-fudgeNFS24" {
+#  vdisk = "${hedvig_vdisk.my-vdisk-fudgeNFS24.name}"
+#  controller = "hedvigucs3.r3.snc1.hedviginc.com.hedviginc.com"
 #}
 
-#resource "hedvig_access" "my-access3" {
-#  vdisk = "${hedvig_vdisk.my-vdisk.name}"
-#  host = "${hedvig_lun.my-lun3.controller}"
-#  address = "172.22.22.30"
-#  type = "host"
-#}
-
-#resource "hedvig_access" "my-access4" {
-#  vdisk = "${hedvig_vdisk.my-vdisk2.name}"
-#  host = "${hedvig_mount.my-mount.controller}"
-#  address = "172.22.22.31"
-#  type = "host"
+#resource "hedvig_lun" "my-lun-lumosHDD21" {
+#  vdisk = "${hedvig_vdisk.my-vdisk-lumosHDD21.name}"
+#  controller = "lumosvip3.hedviginc.com"
 #}
 
