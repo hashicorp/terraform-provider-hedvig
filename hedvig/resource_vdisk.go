@@ -30,6 +30,8 @@ type createDiskResponse struct {
 	Compressed	string  `json:"compressed"`
 	BlockSize	string  `json:"blockSize"`
 	ClusteredFileSystem	string `json:"clusteredFileSystem"`
+	CacheEnabled	string  `json:"cacheEnabled"`
+	Scsi3pr		string	`json:"scsi3pr"`
 }
 
 type readDiskResponse struct {
@@ -153,6 +155,27 @@ func resourceVdisk() *schema.Resource {
 				Type: schema.TypeString,
 				Optional: true,
 				Default: "false",
+				ForceNew: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"true",
+					"false",
+				}, true),
+			},
+			"scsi3pr": {
+				Type: schema.TypeString,
+				Optional: true,
+				Default: "false",
+				ForceNew: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"true",
+					"false",
+				}, true),
+			},
+			"cacheenabled": {
+				Type: schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Default: "false",
 				ValidateFunc: validation.StringInSlice([]string{
 					"true",
 					"false",
@@ -199,8 +222,12 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Block Size must be 512 when Clustered File System is enabled.")
 	}
 
+	if d.Get("cacheenabled") == "false" && d.Get("deduplication") == "true" {
+		return fmt.Errorf("Client-side caching should be enabled when deduplication is.")
+	}
+
 	q := url.Values{}
-	q.Set("request", fmt.Sprintf("{type:AddVirtualDisk, category:VirtualDiskManagement, params:{name:'%s', size:{unit:'GB', value:%d}, diskType:%s, residence:%s, replicationFactor:%s, deduplication:%s, compressed:%s, blockSize:%s, scsi3pr:false, clusteredFileSystem:%s}, sessionId:'%s'}", d.Get("name").(string), d.Get("size").(int), d.Get("type").(string), d.Get("residence"), d.Get("replicationfactor").(string), d.Get("deduplication").(string), compress, d.Get("blocksize").(string), d.Get("clusteredfilesystem"), sessionID))
+	q.Set("request", fmt.Sprintf("{type:AddVirtualDisk, category:VirtualDiskManagement, params:{name:'%s', size:{unit:'GB', value:%d}, diskType:%s, residence:%s, replicationFactor:%s, deduplication:%s, compressed:%s, blockSize:%s, scsi3pr:%s, cacheEnabled:%s, clusteredFileSystem:%s}, sessionId:'%s'}", d.Get("name").(string), d.Get("size").(int), d.Get("type").(string), d.Get("residence"), d.Get("replicationfactor").(string), d.Get("deduplication").(string), compress, d.Get("blocksize").(string), d.Get("scsi3pr"), d.Get("cacheenabled"), d.Get("clusteredfilesystem"), sessionID))
 	u.RawQuery = q.Encode()
 	log.Printf("URL: %v", u.String())
 
