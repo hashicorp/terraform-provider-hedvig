@@ -26,6 +26,10 @@ type createDiskResponse struct {
 	Residence string `json:"residence"`
 	Message   string `json:"message"`
 	ReplicationFactor string `json:"replicationFactor"`
+	Deduplication	string	`json:"deduplication"`
+	Compressed	string  `json:"compressed"`
+	BlockSize	string  `json:"blockSize"`
+	ClusteredFileSystem	string `json:"clusteredFileSystem"`
 }
 
 type readDiskResponse struct {
@@ -112,6 +116,48 @@ func resourceVdisk() *schema.Resource {
 					"6",
 				}, true),
 			},
+			"deduplication": {
+				Type:	schema.TypeString,
+				Optional: true,
+				Default: "false",
+				ForceNew: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"true",
+					"false",
+				}, true),
+			},
+			"compressed": {
+				Type:	schema.TypeString,
+				Optional: true,
+				Default: "false",
+				ForceNew: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"true",
+					"false",
+				}, true),
+			},
+			"blocksize": {
+				Type: schema.TypeString,
+				Optional: true,
+				Default: "4k",
+				ForceNew: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"512",
+					"4096",
+					"4k",
+					"65536",
+					"64k",
+				}, true),
+			},
+			"clusteredfilesystem": {
+				Type: schema.TypeString,
+				Optional: true,
+				Default: "false",
+				ValidateFunc: validation.StringInSlice([]string{
+					"true",
+					"false",
+				}, true),
+			},
 		},
 	}
 }
@@ -127,8 +173,34 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
+	compress := "false"
+
+	if ((d.Get("deduplication") == "true") && (d.Get("compressed") == "false")) {
+		return fmt.Errorf("Deduplication enabled, compression must also be enabled.")
+	} else if d.Get("compressed") == "true" {
+		compress = "true"
+	}
+
+	if d.Get("blocksize").(string) != "512" && d.Get("type") == "NFS" {
+		return fmt.Errorf("Block size must be 512 on NFS disks")
+	}
+
+	if !(d.Get("blocksize").(string) == "4k" || d.Get("blocksize").(string) == "4096") {
+		if d.Get("deduplication") == "true" {
+			return fmt.Errorf("Deduplication enabled, block size must be 4k (or 4096)")
+		}
+	}
+
+	if d.Get("clusteredfilesystem") == "false" && d.Get("type") == "NFS" {
+		return fmt.Errorf("Disk type is NFS, clustered file system must be enabled.")
+	}
+
+	if d.Get("clusteredfilesystem") == "true" && d.Get("blocksize") != "512" {
+		return fmt.Errorf("Block Size must be 512 when Clustered File System is enabled.")
+	}
+
 	q := url.Values{}
-	q.Set("request", fmt.Sprintf("{type:AddVirtualDisk, category:VirtualDiskManagement, params:{name:'%s', size:{unit:'GB', value:%d}, diskType:%s, residence:%s, replicationFactor:%s, scsi3pr:false}, sessionId:'%s'}", d.Get("name").(string), d.Get("size").(int), d.Get("type").(string), d.Get("residence"), d.Get("replicationfactor").(string), sessionID))
+	q.Set("request", fmt.Sprintf("{type:AddVirtualDisk, category:VirtualDiskManagement, params:{name:'%s', size:{unit:'GB', value:%d}, diskType:%s, residence:%s, replicationFactor:%s, deduplication:%s, compressed:%s, blockSize:%s, scsi3pr:false, clusteredFileSystem:%s}, sessionId:'%s'}", d.Get("name").(string), d.Get("size").(int), d.Get("type").(string), d.Get("residence"), d.Get("replicationfactor").(string), d.Get("deduplication").(string), compress, d.Get("blocksize").(string), d.Get("clusteredfilesystem"), sessionID))
 	u.RawQuery = q.Encode()
 	log.Printf("URL: %v", u.String())
 
