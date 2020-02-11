@@ -1,5 +1,7 @@
 ## 1.1.1 (Unreleased)
+
  * Further additional fields for Vdisks
+ * Improved error reporting for field interactions
 
 ## 1.1.0 (February 7, 2020)
 
