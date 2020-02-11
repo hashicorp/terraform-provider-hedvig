@@ -1,6 +1,9 @@
-## 1.1.0 (Unreleased)
+## 1.1.1 (Unreleased)
+ * Further additional fields for Vdisks
 
- * New resource field for Vdisks
+## 1.1.0 (February 7, 2020)
+
+ * New residence field for Vdisks
  * Check for NFS controllers
 
 ## 1.0.5 (November 22, 2019)
