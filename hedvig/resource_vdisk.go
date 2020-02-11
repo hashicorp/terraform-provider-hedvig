@@ -137,7 +137,7 @@ func resourceVdisk() *schema.Resource {
 			"blocksize": {
 				Type: schema.TypeString,
 				Optional: true,
-				Default: "4k",
+				Default: "4096",
 				ForceNew: true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"512",
@@ -191,7 +191,7 @@ func resourceVdisk() *schema.Resource {
 				Type: schema.TypeString,
 				Optional: true,
 				ForceNew: true,
-				Default: " ",
+				Default: "",
 			},
 			"replicationpolicy": {
 				Type: schema.TypeString,
@@ -242,6 +242,16 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	blocksize := ""
+
+        if d.Get("blocksize").(string) == "4k" {
+		blocksize = "4096"
+	} else if d.Get("blocksize").(string) == "64k" {
+		blocksize = "65536"
+	} else {
+		blocksize = d.Get("blocksize").(string)
+	}
+
 	if d.Get("residence").(string) != "HDD" && d.Get("deduplication") == "true" {
 		return fmt.Errorf("Deduplication enabled, residence must be HDD.")
 	}
@@ -254,12 +264,16 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Block Size must be 512 when Clustered File System is enabled.")
 	}
 
+	if d.Get("scsi3pr") == "true" && d.Get("type") == "NFS" {
+		return fmt.Errorf("Clustered Shared Volumes (scsi3pr) not supported for NFS disks.")
+	}
+
 	if d.Get("cacheenabled") == "false" && d.Get("deduplication") == "true" {
 		return fmt.Errorf("Client-side caching should be enabled when deduplication is.")
 	}
 
 	q := url.Values{}
-	q.Set("request", fmt.Sprintf("{type:AddVirtualDisk, category:VirtualDiskManagement, params:{name:'%s', size:{unit:'GB', value:%d}, diskType:%s, residence:%s, replicationFactor:%d, deduplication:%s, compressed:%s, blockSize:%s, scsi3pr:%s, cacheEnabled:%s, replicationPolicy:%s, clusteredFileSystem:%s, encryption:%s, description:'%s'}, sessionId:'%s'}", d.Get("name").(string), d.Get("size").(int), d.Get("type").(string), d.Get("residence"), d.Get("replicationfactor").(int), d.Get("deduplication").(string), compress, d.Get("blocksize").(string), d.Get("scsi3pr"), d.Get("cacheenabled"), d.Get("replicationpolicy").(string), d.Get("clusteredfilesystem"), d.Get("encryption"), d.Get("description"), sessionID))
+	q.Set("request", fmt.Sprintf("{type:AddVirtualDisk, category:VirtualDiskManagement, params:{name:'%s', size:{unit:'GB', value:%d}, diskType:%s, residence:%s, replicationFactor:%d, deduplication:%s, compressed:%s, blockSize:%s, scsi3pr:%s, cacheEnabled:%s, replicationPolicy:%s, clusteredFileSystem:%s, encryption:%s, description:'%s'}, sessionId:'%s'}", d.Get("name").(string), d.Get("size").(int), d.Get("type").(string), d.Get("residence"), d.Get("replicationfactor").(int), d.Get("deduplication").(string), compress, blocksize, d.Get("scsi3pr"), d.Get("cacheenabled"), d.Get("replicationpolicy").(string), d.Get("clusteredfilesystem"), d.Get("encryption"), d.Get("description"), sessionID))
 	u.RawQuery = q.Encode()
 	log.Printf("URL: %v", u.String())
 
