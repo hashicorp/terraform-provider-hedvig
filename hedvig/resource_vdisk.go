@@ -108,18 +108,11 @@ func resourceVdisk() *schema.Resource {
 				}, true),
 			},
 			"replicationfactor": {
-				Type: 	 schema.TypeString,
+				Type: 	 schema.TypeInt,
 				Optional: true,
 				Default: "3",
 				ForceNew: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"1",
-					"2",
-					"3",
-					"4",
-					"5",
-					"6",
-				}, true),
+				ValidateFunc: validation.IntBetween(1, 6),
 			},
 			"deduplication": {
 				Type:	schema.TypeString,
@@ -198,7 +191,7 @@ func resourceVdisk() *schema.Resource {
 				Type: schema.TypeString,
 				Optional: true,
 				ForceNew: true,
-				Default: "",
+				Default: " ",
 			},
 			"replicationpolicy": {
 				Type: schema.TypeString,
@@ -235,6 +228,10 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 		compress = "true"
 	}
 
+        if d.Get("deduplication") == "true" && d.Get("type") == "BLOCK" && d.Get("clusteredfilesystem") == "true"{
+                return fmt.Errorf("Deduplication cannot be enabled for a block virtual disk with a clustered file system.")
+        }
+
 	if d.Get("blocksize").(string) != "512" && d.Get("type") == "NFS" {
 		return fmt.Errorf("Block size must be 512 on NFS disks")
 	}
@@ -243,6 +240,10 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 		if d.Get("deduplication") == "true" {
 			return fmt.Errorf("Deduplication enabled, block size must be 4k (or 4096)")
 		}
+	}
+
+	if d.Get("residence").(string) != "HDD" && d.Get("deduplication") == "true" {
+		return fmt.Errorf("Deduplication enabled, residence must be HDD.")
 	}
 
 	if d.Get("clusteredfilesystem") == "false" && d.Get("type") == "NFS" {
@@ -258,7 +259,7 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	q := url.Values{}
-	q.Set("request", fmt.Sprintf("{type:AddVirtualDisk, category:VirtualDiskManagement, params:{name:'%s', size:{unit:'GB', value:%d}, diskType:%s, residence:%s, replicationFactor:%s, deduplication:%s, compressed:%s, blockSize:%s, scsi3pr:%s, cacheEnabled:%s, replicationPolicy:%s, clusteredFileSystem:%s, encryption:%s, description:'%s'}, sessionId:'%s'}", d.Get("name").(string), d.Get("size").(int), d.Get("type").(string), d.Get("residence"), d.Get("replicationfactor").(string), d.Get("deduplication").(string), compress, d.Get("blocksize").(string), d.Get("scsi3pr"), d.Get("cacheenabled"), d.Get("replicationpolicy").(string), d.Get("clusteredfilesystem"), d.Get("encryption"), d.Get("description"), sessionID))
+	q.Set("request", fmt.Sprintf("{type:AddVirtualDisk, category:VirtualDiskManagement, params:{name:'%s', size:{unit:'GB', value:%d}, diskType:%s, residence:%s, replicationFactor:%d, deduplication:%s, compressed:%s, blockSize:%s, scsi3pr:%s, cacheEnabled:%s, replicationPolicy:%s, clusteredFileSystem:%s, encryption:%s, description:'%s'}, sessionId:'%s'}", d.Get("name").(string), d.Get("size").(int), d.Get("type").(string), d.Get("residence"), d.Get("replicationfactor").(int), d.Get("deduplication").(string), compress, d.Get("blocksize").(string), d.Get("scsi3pr"), d.Get("cacheenabled"), d.Get("replicationpolicy").(string), d.Get("clusteredfilesystem"), d.Get("encryption"), d.Get("description"), sessionID))
 	u.RawQuery = q.Encode()
 	log.Printf("URL: %v", u.String())
 
@@ -284,6 +285,9 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if createResp.Result[0].Status != "ok" {
+		if strings.HasSuffix(createResp.Message, "Run setkmsinfo command") {
+			return fmt.Errorf("Cannot enable encryption without setting up KMS. Please refer to the Hedvig Encrypt360 Guide for assistance.")
+		}
 		return fmt.Errorf("Error creating vdisk %q: %s", d.Get("name").(string), createResp.Result[0].Message)
 	}
 
