@@ -1,4 +1,8 @@
-## 1.0.6 (Unreleased)
+## 1.1.0 (Unreleased)
+
+ * New resource field for Vdisks
+ * Check for NFS controllers
+
 ## 1.0.5 (November 22, 2019)
 
  * Merge in switch to Go modules update

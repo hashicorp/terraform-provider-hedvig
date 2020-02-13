@@ -17,6 +17,7 @@ Example creating a Vdisk resource.
 ```
 resource "hedvig_vdisk" "example-vdisk" {
   name = "HedvigVdisk01"
+  residence = "HDD"
   size = 20
   type = "NFS"
 }
@@ -27,6 +28,8 @@ resource "hedvig_vdisk" "example-vdisk" {
 The following arguments are supported:
 
 * `name` - (Required) The name to be used by the Vdisk for identification.
+
+* `residence` - (Optional) Disk residence; can be either `HDD` or `Flash`
 
 * `size` - (Required) The size of the disk in GB.
 
