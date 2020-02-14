@@ -30,10 +30,10 @@ type createMountResponse struct {
 type createNFSMountCheck struct {
 	Result []struct {
 		Protocol string `json:"protocol"`
-		Target string `json:"target"`
+		Target   string `json:"target"`
 	}
-	Status string `json:"status"`
-	Type string `json:"type"`
+	Status    string `json:"status"`
+	Type      string `json:"type"`
 	RequestId string `json:"requestId`
 }
 
@@ -148,7 +148,7 @@ func resourceMountCreate(d *schema.ResourceData, meta interface{}) error {
 			if len(createResp2.Result) < 1 {
 				return errors.New("No controllers found")
 			} else {
-			 	for i := 0; i < len(createResp2.Result); i++ {
+				for i := 0; i < len(createResp2.Result); i++ {
 					if createResp2.Result[i].Protocol != "nfs" {
 						continue
 					} else {
