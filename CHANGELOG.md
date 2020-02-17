@@ -1,3 +1,4 @@
+## 1.2.0 (Unreleased)
 ## 1.1.0 (February 17, 2020)
 
  * New resource field for Vdisks
