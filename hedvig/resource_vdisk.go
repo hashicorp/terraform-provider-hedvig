@@ -410,7 +410,7 @@ func resourceVdiskUpdate(d *schema.ResourceData, meta interface{}) error {
 			return errors.New("Cannot downsize a virtual disk")
 		}
 
-		q.Set("request", fmt.Sprintf("{type:ResizeDisks, category:VirtualDiskManagement, params:{virtualDisks:['%s'], size:{unit:'GB', value:%d}}, sessionId:'%s'}", idSplit[2], d.Get("size").(int),
+		q.Set("request", fmt.Sprintf("{type:ResizeDisks, category:VirtualDiskManagement, params:{virtualDisks:['%s'], size:{unit:'GB', value:%d}}, sessionId:'%s'}", idSplit[1], d.Get("size").(int),
 			sessionID))
 		u.RawQuery = q.Encode()
 		log.Printf("URL: %v", u.String())
