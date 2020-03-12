@@ -1,3 +1,4 @@
+## 1.2.0 (Unreleased)
 ## 1.1.1 (March 12, 2020)
 
  * Bugfix in resize Vdisk
