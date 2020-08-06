@@ -1,11 +1,19 @@
 ## 1.2.0 (Unreleased)
+
+ * Further additional fields for Vdisks
+
 ## 1.1.1 (March 12, 2020)
 
  * Bugfix in resize Vdisk
 
 ## 1.1.0 (February 17, 2020)
 
- * New resource field for Vdisks
+ * Check for NFS controllers
+ * Improved error reporting for field interactions
+
+## 1.1.0 (February 7, 2020)
+
+ * New residence field for Vdisks
  * Check for NFS controllers
 
 ## 1.0.5 (November 22, 2019)
