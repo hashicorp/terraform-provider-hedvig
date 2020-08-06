@@ -20,21 +20,21 @@ type createDiskResponse struct {
 		Message string `json:"message"`
 		Status  string `json:"status"`
 	} `json:"result"`
-	RequestID string `json:"requestId"`
-	Type      string `json:"type"`
-	Status    string `json:"status"`
-	Residence string `json:"residence"`
-	Message   string `json:"message"`
-	ReplicationFactor string `json:"replicationFactor"`
-	Deduplication	string	`json:"deduplication"`
-	Compressed	string  `json:"compressed"`
-	BlockSize	string  `json:"blockSize"`
-	ClusteredFileSystem	string `json:"clusteredFileSystem"`
-	CacheEnabled	string  `json:"cacheEnabled"`
-	Scsi3pr		string	`json:"scsi3pr"`
-	Encryption	string	`json:"encryption"`
-	ReplicationPolicy string `json:"replicationPolicy"`
-	Description	string	`json:"description"`
+	RequestID           string `json:"requestId"`
+	Type                string `json:"type"`
+	Status              string `json:"status"`
+	Residence           string `json:"residence"`
+	Message             string `json:"message"`
+	ReplicationFactor   string `json:"replicationFactor"`
+	Deduplication       string `json:"deduplication"`
+	Compressed          string `json:"compressed"`
+	BlockSize           string `json:"blockSize"`
+	ClusteredFileSystem string `json:"clusteredFileSystem"`
+	CacheEnabled        string `json:"cacheEnabled"`
+	Scsi3pr             string `json:"scsi3pr"`
+	Encryption          string `json:"encryption"`
+	ReplicationPolicy   string `json:"replicationPolicy"`
+	Description         string `json:"description"`
 }
 
 type readDiskResponse struct {
@@ -108,22 +108,22 @@ func resourceVdisk() *schema.Resource {
 				}, true),
 			},
 			"replicationfactor": {
-				Type: 	 schema.TypeInt,
-				Optional: true,
-				Default: "3",
-				ForceNew: true,
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      "3",
+				ForceNew:     true,
 				ValidateFunc: validation.IntBetween(1, 6),
 			},
 			"deduplication": {
-				Type:	schema.TypeBool,
+				Type:     schema.TypeBool,
 				Optional: true,
-				Default: false,
+				Default:  false,
 				ForceNew: true,
 			},
 			"compressed": {
-				Type:	schema.TypeString,
+				Type:     schema.TypeString,
 				Optional: true,
-				Default: "false",
+				Default:  "false",
 				ForceNew: true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"true",
@@ -131,9 +131,9 @@ func resourceVdisk() *schema.Resource {
 				}, true),
 			},
 			"blocksize": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
 				Optional: true,
-				Default: "4096",
+				Default:  "4096",
 				ForceNew: true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"512",
@@ -144,9 +144,9 @@ func resourceVdisk() *schema.Resource {
 				}, true),
 			},
 			"clusteredfilesystem": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
 				Optional: true,
-				Default: "false",
+				Default:  "false",
 				ForceNew: true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"true",
@@ -154,9 +154,9 @@ func resourceVdisk() *schema.Resource {
 				}, true),
 			},
 			"scsi3pr": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
 				Optional: true,
-				Default: "false",
+				Default:  "false",
 				ForceNew: true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"true",
@@ -164,41 +164,41 @@ func resourceVdisk() *schema.Resource {
 				}, true),
 			},
 			"cacheenabled": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
-				Default: "false",
+				Default:  "false",
 				ValidateFunc: validation.StringInSlice([]string{
 					"true",
 					"false",
 				}, true),
 			},
 			"encryption": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
-				Default: "false",
+				Default:  "false",
 				ValidateFunc: validation.StringInSlice([]string{
 					"true",
 					"false",
 				}, true),
 			},
 			"description": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
-				Default: "",
+				Default:  "",
 			},
 			"replicationpolicy": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
-				Default: "Agnostic",
+				Default:  "Agnostic",
 				ValidateFunc: validation.StringInSlice([]string{
 					"Agnostic",
 					"DataCenterAware",
 					"RackAware",
-			//		"RackUnaware",
+					//		"RackUnaware",
 				}, true),
 			},
 		},
@@ -218,15 +218,15 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 
 	compress := "false"
 
-	if ((d.Get("deduplication") == "true") && (d.Get("compressed") == "false")) {
+	if (d.Get("deduplication") == "true") && (d.Get("compressed") == "false") {
 		return fmt.Errorf("Deduplication enabled, compression must also be enabled.")
 	} else if d.Get("compressed") == "true" {
 		compress = "true"
 	}
 
-        if d.Get("deduplication") == "true" && d.Get("type") == "BLOCK" && d.Get("clusteredfilesystem") == "true"{
-                return fmt.Errorf("Deduplication cannot be enabled for a block virtual disk with a clustered file system.")
-        }
+	if d.Get("deduplication") == "true" && d.Get("type") == "BLOCK" && d.Get("clusteredfilesystem") == "true" {
+		return fmt.Errorf("Deduplication cannot be enabled for a block virtual disk with a clustered file system.")
+	}
 
 	if d.Get("blocksize").(string) != "512" && d.Get("type") == "NFS" {
 		return fmt.Errorf("Block size must be 512 on NFS disks")
@@ -240,7 +240,7 @@ func resourceVdiskCreate(d *schema.ResourceData, meta interface{}) error {
 
 	blocksize := ""
 
-        if d.Get("blocksize").(string) == "4k" {
+	if d.Get("blocksize").(string) == "4k" {
 		blocksize = "4096"
 	} else if d.Get("blocksize").(string) == "64k" {
 		blocksize = "65536"
