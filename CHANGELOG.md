@@ -1,6 +1,14 @@
-## 1.1.1 (Unreleased)
+## 1.2.0 (Unreleased)
 
  * Further additional fields for Vdisks
+
+## 1.1.1 (March 12, 2020)
+
+ * Bugfix in resize Vdisk
+
+## 1.1.0 (February 17, 2020)
+
+ * Check for NFS controllers
  * Improved error reporting for field interactions
 
 ## 1.1.0 (February 7, 2020)

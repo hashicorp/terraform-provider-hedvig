@@ -89,10 +89,10 @@ func resourceVdisk() *schema.Resource {
 				Required: true,
 			},
 			"residence": {
-				Type:	  schema.TypeString,
+				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
-				Default: "HDD",
+				Default:  "HDD",
 				ValidateFunc: validation.StringInSlice([]string{
 					"Flash",
 					"HDD",
