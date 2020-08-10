@@ -1,7 +1,7 @@
 provider "hedvig" {
-  username = "HedvigAdmin"
-  password = "hedvig"
-  node = "lumos4.hedviginc.com"
+  username = "admin"
+  password = "password"
+  node = "node.domainname.com"
 }
 
 resource "hedvig_vdisk" "my-vdisk-lumosBlock55" {
