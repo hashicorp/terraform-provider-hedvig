@@ -1,4 +1,4 @@
-## 1.2.0 (Unreleased)
+## 1.2.0 (August 10, 2020)
 
  * Further additional fields for Vdisks
 
